@@ -640,6 +640,8 @@
     </div>
 
     <script>
+        const { ipcRenderer } = require('electron');
+
         const timerDisplay = document.getElementById('timerDisplay');
         const startBtn = document.getElementById('startBtn');
         const resetBtn = document.getElementById('resetBtn');
@@ -780,16 +782,22 @@
                     setInputsDisabled(true);
                     showGoalDisplay();
 
+                    // Prevent computer from going to sleep
+                    ipcRenderer.send('start-power-save-blocker');
+
                     timerId = setInterval(() => {
                         timeLeft--;
                         updateDisplay();
-                        
+
                         if (timeLeft <= 0) {
                             clearInterval(timerId);
                             isRunning = false;
                             timerDisplay.classList.remove('running');
                             startBtn.textContent = 'Start';
                             setInputsDisabled(false);
+
+                            // Allow computer to sleep again
+                            ipcRenderer.send('stop-power-save-blocker');
 
                             playAlertSound();
 
@@ -809,6 +817,9 @@
                 timerDisplay.classList.remove('running');
                 timerDisplay.classList.add('paused');
                 startBtn.textContent = 'Wznów';
+
+                // Allow computer to sleep when paused
+                ipcRenderer.send('stop-power-save-blocker');
             }
         }
 
@@ -825,6 +836,9 @@
             hideGoalDisplay();
             updateDisplay();
             progressCircle.style.strokeDashoffset = circumference;
+
+            // Allow computer to sleep when reset
+            ipcRenderer.send('stop-power-save-blocker');
         }
 
         function showAchievementModal() {

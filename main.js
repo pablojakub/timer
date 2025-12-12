@@ -1,7 +1,8 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, powerSaveBlocker, ipcMain } = require('electron');
 const path = require('path');
 
 let mainWindow;
+let powerSaveBlockerId = null;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -34,5 +35,21 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
+    }
+});
+
+// IPC handlers for power save blocker
+ipcMain.on('start-power-save-blocker', () => {
+    if (powerSaveBlockerId === null) {
+        powerSaveBlockerId = powerSaveBlocker.start('prevent-display-sleep');
+        console.log('Power save blocker started:', powerSaveBlockerId);
+    }
+});
+
+ipcMain.on('stop-power-save-blocker', () => {
+    if (powerSaveBlockerId !== null) {
+        powerSaveBlocker.stop(powerSaveBlockerId);
+        console.log('Power save blocker stopped:', powerSaveBlockerId);
+        powerSaveBlockerId = null;
     }
 });
