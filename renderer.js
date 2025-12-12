@@ -394,7 +394,6 @@ const musicLibrary = [
     { id: 3, name: 'Study Beats 1', category: 'Lo-fi', file: 'music/lofi/study-beats-1.mp3', icon: '🎧' },
     { id: 4, name: 'Study Beats 2', category: 'Lo-fi', file: 'music/lofi/study-beats-2.mp3', icon: '🎧' },
     { id: 5, name: 'Rain Forest', category: 'Nature', file: 'music/nature/rain-forest.mp3', icon: '🌲' },
-    { id: 6, name: 'Ocean Waves', category: 'Nature', file: 'music/nature/ocean-waves.mp3', icon: '🌊' },
 ];
 
 let currentTrackIndex = 0;
