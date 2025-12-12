@@ -317,10 +317,6 @@ document.getElementById('minimizeBtn').addEventListener('click', () => {
     ipcRenderer.send('minimize-window');
 });
 
-document.getElementById('maximizeBtn').addEventListener('click', () => {
-    ipcRenderer.send('maximize-window');
-});
-
 if (Notification.permission === 'default') {
     Notification.requestPermission();
 }
