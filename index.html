@@ -51,7 +51,7 @@
 
         .container {
             width: calc(var(--base-w) * 1px);
-            height: calc(var(--base-h) * 1px);
+            min-height: calc(var(--base-h) * 1px);
             background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             border-radius: 24px;
             border: 1px solid var(--border);
@@ -164,6 +164,23 @@
 
         .goal-input::placeholder {
             color: var(--text-muted);
+        }
+
+        .goal-display {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.4;
+            box-shadow: 0 0 20px var(--accent-glow);
+            margin: 0;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
         }
 
         .timer-display {
@@ -331,6 +348,229 @@
         .time.paused {
             animation: pulse 1.5s ease-in-out infinite;
         }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-radius: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-dialog {
+            background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border: 1px solid var(--accent);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 280px;
+            box-shadow: 0 0 40px var(--accent-glow);
+            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-align: center;
+            margin: 0;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-question {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            margin: 0 0 12px 0;
+        }
+
+        .modal-goal-text {
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin: 0;
+            word-wrap: break-word;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 12px;
+        }
+
+        /* Achievements Section */
+        .achievements-section {
+            margin-top: 16px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .achievements-toggle {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .achievements-toggle:hover {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+        }
+
+        .toggle-text {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .toggle-icon {
+            font-size: 12px;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+            margin-left: auto;
+            margin-right: 8px;
+        }
+
+        .toggle-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .achievements-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .achievements-list-container {
+            margin-top: 8px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .achievements-list-container.expanded {
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .achievements-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .achievement-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 300;
+            line-height: 1.4;
+            animation: slideIn 0.3s ease;
+            position: relative;
+            padding-left: 32px;
+        }
+
+        .achievement-item::before {
+            content: '✓';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .achievement-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Custom scrollbar for achievements list */
+        .achievements-list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .achievements-list-container::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border-radius: 3px;
+        }
+
+        .achievements-list-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .achievements-list-container::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -344,8 +584,9 @@
             </header>
 
             <div class="goal-section">
-                <label class="goal-label">Cel sesji</label>
+                <label class="goal-label" id="goalLabel">Cel sesji</label>
                 <input type="text" class="goal-input" id="goalInput" placeholder="Co chcesz osiągnąć?">
+                <h2 class="goal-display" id="goalDisplay" style="display: none;"></h2>
             </div>
 
             <div class="timer-display">
@@ -362,9 +603,38 @@
                 </div>
             </div>
 
+            <!-- Achievements Section -->
+            <div class="achievements-section" id="achievementsSection">
+                <button class="achievements-toggle" id="achievementsToggle">
+                    <span class="toggle-text">Dzisiejsze osiągnięcia</span>
+                    <span class="toggle-icon" id="toggleIcon">▼</span>
+                    <span class="achievements-count" id="achievementsCount">0</span>
+                </button>
+                <div class="achievements-list-container" id="achievementsContainer" style="display: none;">
+                    <ul class="achievements-list" id="achievementsList"></ul>
+                </div>
+            </div>
+
             <div class="controls">
                 <button class="btn btn-secondary" id="resetBtn">Reset</button>
                 <button class="btn btn-primary" id="startBtn">Start</button>
+            </div>
+
+            <!-- Achievement Modal -->
+            <div class="modal-overlay" id="achievementModal" style="display: none;">
+                <div class="modal-dialog">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Osiągnięcie celu</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p class="modal-question">Czy osiągnąłeś swój cel?</p>
+                        <p class="modal-goal-text" id="modalGoalText"></p>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary modal-btn" id="modalNoBtn">Nie</button>
+                        <button class="btn btn-primary modal-btn" id="modalYesBtn">Tak</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -407,9 +677,93 @@
             return minutes * 60;
         }
 
+        function getTodayKey() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `achievements_${year}-${month}-${day}`;
+        }
+
+        function saveAchievement(goalText) {
+            const key = getTodayKey();
+            const achievements = JSON.parse(localStorage.getItem(key) || '[]');
+
+            achievements.push({
+                goal: goalText,
+                timestamp: Date.now()
+            });
+
+            localStorage.setItem(key, JSON.stringify(achievements));
+        }
+
+        function loadTodayAchievements() {
+            const key = getTodayKey();
+            const achievements = JSON.parse(localStorage.getItem(key) || '[]');
+
+            // Update count badge
+            document.getElementById('achievementsCount').textContent = achievements.length;
+
+            // Update list
+            const list = document.getElementById('achievementsList');
+            list.innerHTML = '';
+
+            achievements.forEach(achievement => {
+                const li = document.createElement('li');
+                li.className = 'achievement-item';
+                li.textContent = achievement.goal;
+                list.appendChild(li);
+            });
+
+            // Show section if there are achievements
+            if (achievements.length > 0) {
+                document.getElementById('achievementsSection').style.display = 'block';
+            }
+        }
+
+        function cleanOldAchievements() {
+            const today = getTodayKey();
+            const keysToRemove = [];
+
+            // Find all achievement keys
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('achievements_') && key !== today) {
+                    keysToRemove.push(key);
+                }
+            }
+
+            // Remove old keys (older than 30 days)
+            keysToRemove.forEach(key => {
+                const dateStr = key.replace('achievements_', '');
+                const keyDate = new Date(dateStr);
+                const daysDiff = (Date.now() - keyDate.getTime()) / (1000 * 60 * 60 * 24);
+
+                if (daysDiff > 30) {
+                    localStorage.removeItem(key);
+                }
+            });
+        }
+
         function setInputsDisabled(disabled) {
             minutesInput.disabled = disabled;
             goalInput.disabled = disabled;
+        }
+
+        function showGoalDisplay() {
+            const goalText = goalInput.value.trim();
+            if (goalText) {
+                document.getElementById('goalDisplay').textContent = goalText;
+                goalInput.style.display = 'none';
+                document.getElementById('goalDisplay').style.display = 'block';
+                document.getElementById('goalLabel').style.display = 'none';
+            }
+        }
+
+        function hideGoalDisplay() {
+            goalInput.style.display = 'block';
+            document.getElementById('goalDisplay').style.display = 'none';
+            document.getElementById('goalLabel').style.display = 'block';
         }
 
         function startTimer() {
@@ -424,7 +778,8 @@
                     timerDisplay.classList.remove('paused');
                     startBtn.textContent = 'Pauza';
                     setInputsDisabled(true);
-                    
+                    showGoalDisplay();
+
                     timerId = setInterval(() => {
                         timeLeft--;
                         updateDisplay();
@@ -435,13 +790,16 @@
                             timerDisplay.classList.remove('running');
                             startBtn.textContent = 'Start';
                             setInputsDisabled(false);
-                            
+
                             playAlertSound();
-                            
+
                             new Notification('Deep Work', {
                                 body: goalInput.value || 'Sesja zakończona!',
                                 icon: null
                             });
+
+                            // Show achievement modal
+                            showAchievementModal();
                         }
                     }, 1000);
                 }
@@ -464,12 +822,58 @@
             timerDisplay.classList.remove('running', 'paused');
             startBtn.textContent = 'Start';
             setInputsDisabled(false);
+            hideGoalDisplay();
             updateDisplay();
             progressCircle.style.strokeDashoffset = circumference;
         }
 
+        function showAchievementModal() {
+            const goalText = goalInput.value.trim() || 'Sesja Deep Work';
+            document.getElementById('modalGoalText').textContent = goalText;
+            document.getElementById('achievementModal').style.display = 'flex';
+        }
+
+        function hideAchievementModal() {
+            document.getElementById('achievementModal').style.display = 'none';
+        }
+
+        function handleAchievementYes() {
+            const goalText = goalInput.value.trim();
+            if (goalText) {
+                saveAchievement(goalText);
+                loadTodayAchievements();
+            }
+            hideAchievementModal();
+        }
+
+        function handleAchievementNo() {
+            hideAchievementModal();
+        }
+
+        function toggleAchievements() {
+            const container = document.getElementById('achievementsContainer');
+            const icon = document.getElementById('toggleIcon');
+            const isExpanded = container.classList.contains('expanded');
+
+            if (isExpanded) {
+                container.classList.remove('expanded');
+                icon.classList.remove('expanded');
+                container.style.display = 'none';
+            } else {
+                container.style.display = 'block';
+                // Small delay to allow display change before animation
+                setTimeout(() => {
+                    container.classList.add('expanded');
+                    icon.classList.add('expanded');
+                }, 10);
+            }
+        }
+
         startBtn.addEventListener('click', startTimer);
         resetBtn.addEventListener('click', resetTimer);
+        document.getElementById('modalYesBtn').addEventListener('click', handleAchievementYes);
+        document.getElementById('modalNoBtn').addEventListener('click', handleAchievementNo);
+        document.getElementById('achievementsToggle').addEventListener('click', toggleAchievements);
 
         minutesInput.addEventListener('input', () => {
             if (!isRunning) {
@@ -551,6 +955,10 @@
         progressCircle.style.strokeDasharray = circumference;
         progressCircle.style.strokeDashoffset = circumference;
         updateScale();
+
+        // Load achievements on page load
+        loadTodayAchievements();
+        cleanOldAchievements();
 
         updateDisplay();
     </script>
