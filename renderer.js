@@ -3,11 +3,15 @@ const { ipcRenderer } = require('electron');
 const timerDisplay = document.getElementById('timerDisplay');
 const startBtn = document.getElementById('startBtn');
 const resetBtn = document.getElementById('resetBtn');
-const minutesInput = document.getElementById('minutesInput');
+const timerControls = document.getElementById('timerControls');
 const goalInput = document.getElementById('goalInput');
 const progressCircle = document.getElementById('progressCircle');
+const increaseBy10Btn = document.getElementById('increaseBy10');
+const decreaseBy10Btn = document.getElementById('decreaseBy10');
+const increaseBy1Btn = document.getElementById('increaseBy1');
+const decreaseBy1Btn = document.getElementById('decreaseBy1');
 
-let timeLeft = getInputTime();
+let timeLeft = 50 * 60; // Default 50 minutes in seconds
 let totalTime = timeLeft;
 let timerId = null;
 let isRunning = false;
@@ -32,9 +36,38 @@ function updateDisplay() {
     progressCircle.style.strokeDashoffset = circumference * (1 - progress);
 }
 
-function getInputTime() {
-    const minutes = parseInt(minutesInput.value) || 0;
-    return minutes * 60;
+function getMinutesFromTime() {
+    return Math.ceil(timeLeft / 60);
+}
+
+function setTimeFromMinutes(minutes) {
+    const clampedMinutes = Math.max(1, Math.min(999, minutes));
+    timeLeft = clampedMinutes * 60;
+    totalTime = timeLeft;
+    updateDisplay();
+    updateArrowButtons();
+}
+
+function updateArrowButtons() {
+    const currentMinutes = getMinutesFromTime();
+
+    // Disable decrease buttons if at minimum
+    decreaseBy10Btn.disabled = currentMinutes <= 10;
+    decreaseBy1Btn.disabled = currentMinutes <= 1;
+
+    // Disable increase buttons if at maximum
+    increaseBy10Btn.disabled = currentMinutes >= 990;
+    increaseBy1Btn.disabled = currentMinutes >= 999;
+}
+
+function showTimerControls() {
+    document.querySelector('.arrow-buttons-left').classList.remove('hidden');
+    document.querySelector('.arrow-buttons-right').classList.remove('hidden');
+}
+
+function hideTimerControls() {
+    document.querySelector('.arrow-buttons-left').classList.add('hidden');
+    document.querySelector('.arrow-buttons-right').classList.add('hidden');
 }
 
 function getTodayKey() {
@@ -106,8 +139,14 @@ function cleanOldAchievements() {
 }
 
 function setInputsDisabled(disabled) {
-    minutesInput.disabled = disabled;
     goalInput.disabled = disabled;
+
+    if (disabled) {
+        hideTimerControls();
+    } else {
+        showTimerControls();
+        updateArrowButtons();
+    }
 }
 
 function showGoalDisplay() {
@@ -128,10 +167,6 @@ function hideGoalDisplay() {
 
 function startTimer() {
     if (!isRunning) {
-        if (timeLeft === 0) {
-            timeLeft = getInputTime();
-            totalTime = timeLeft;
-        }
         if (timeLeft > 0) {
             isRunning = true;
             timerDisplay.classList.add('running');
@@ -188,15 +223,12 @@ function resetTimer() {
     clearInterval(timerId);
     isRunning = false;
     stopMusic();
-    // restore minutes input to default value and reinitialize timer
-    minutesInput.value = 50;
-    timeLeft = getInputTime();
-    totalTime = timeLeft;
+    // restore timer to default value
+    setTimeFromMinutes(50);
     timerDisplay.classList.remove('running', 'paused');
     startBtn.textContent = 'Start';
     setInputsDisabled(false);
     hideGoalDisplay();
-    updateDisplay();
     progressCircle.style.strokeDashoffset = circumference;
 
     // Allow computer to sleep when reset
@@ -251,6 +283,35 @@ document.getElementById('modalYesBtn').addEventListener('click', handleAchieveme
 document.getElementById('modalNoBtn').addEventListener('click', handleAchievementNo);
 document.getElementById('achievementsToggle').addEventListener('click', toggleAchievements);
 
+// Arrow button event listeners
+increaseBy10Btn.addEventListener('click', () => {
+    if (!isRunning) {
+        const currentMinutes = getMinutesFromTime();
+        setTimeFromMinutes(currentMinutes + 10);
+    }
+});
+
+decreaseBy10Btn.addEventListener('click', () => {
+    if (!isRunning) {
+        const currentMinutes = getMinutesFromTime();
+        setTimeFromMinutes(currentMinutes - 10);
+    }
+});
+
+increaseBy1Btn.addEventListener('click', () => {
+    if (!isRunning) {
+        const currentMinutes = getMinutesFromTime();
+        setTimeFromMinutes(currentMinutes + 1);
+    }
+});
+
+decreaseBy1Btn.addEventListener('click', () => {
+    if (!isRunning) {
+        const currentMinutes = getMinutesFromTime();
+        setTimeFromMinutes(currentMinutes - 1);
+    }
+});
+
 // Window controls
 document.getElementById('minimizeBtn').addEventListener('click', () => {
     ipcRenderer.send('minimize-window');
@@ -258,14 +319,6 @@ document.getElementById('minimizeBtn').addEventListener('click', () => {
 
 document.getElementById('maximizeBtn').addEventListener('click', () => {
     ipcRenderer.send('maximize-window');
-});
-
-minutesInput.addEventListener('input', () => {
-    if (!isRunning) {
-        timeLeft = getInputTime();
-        totalTime = timeLeft;
-        updateDisplay();
-    }
 });
 
 if (Notification.permission === 'default') {
@@ -636,3 +689,5 @@ loadTodayAchievements();
 cleanOldAchievements();
 
 updateDisplay();
+updateArrowButtons();
+showTimerControls();

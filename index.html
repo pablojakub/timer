@@ -33,11 +33,15 @@
                     <circle class="bg" cx="100" cy="100" r="90"/>
                     <circle class="progress" id="progressCircle" cx="100" cy="100" r="90"/>
                 </svg>
-                <div class="time" id="timerDisplay">50:00</div>
-                <div class="time-inputs">
-                    <div class="time-input-group">
-                        <input type="number" class="time-input" id="minutesInput" min="0" max="999" value="50">
-                        <span class="time-input-label">Minuty</span>
+                <div class="timer-controls" id="timerControls">
+                    <div class="arrow-buttons-left">
+                        <button class="arrow-btn" id="increaseBy10">▲</button>
+                        <button class="arrow-btn" id="decreaseBy10">▼</button>
+                    </div>
+                    <div class="time" id="timerDisplay">50 min</div>
+                    <div class="arrow-buttons-right">
+                        <button class="arrow-btn" id="increaseBy1">▲</button>
+                        <button class="arrow-btn" id="decreaseBy1">▼</button>
                     </div>
                 </div>
             </div>

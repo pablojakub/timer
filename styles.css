@@ -210,6 +210,8 @@ body {
     justify-content: center;
     position: relative;
     z-index: 10;
+    margin-top: 48px;
+    margin-bottom: 48px;
 }
 
 .time {
@@ -232,49 +234,59 @@ body {
     text-shadow: 0 0 60px var(--accent-glow);
 }
 
-.time-inputs {
+.timer-controls {
     display: flex;
-    gap: 8px;
     align-items: center;
-    margin-bottom: 16px;
+    justify-content: center;
+    gap: 20px;
 }
 
-.time-input-group {
+.arrow-buttons-left,
+.arrow-buttons-right {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 4px;
+    gap: 6px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.time-input {
-    width: 100px;
+.arrow-buttons-left.hidden,
+.arrow-buttons-right.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+}
+
+.arrow-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
     background: var(--bg-primary);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 10px;
-    color: var(--text-primary);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 26px;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.time-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 15px var(--accent-glow);
-}
-
-.time-input:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.time-input-label {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 16px;
+}
+
+.arrow-btn:hover {
+    background: var(--accent);
+    color: white;
+    transform: scale(1.1);
+    border-color: var(--accent);
+}
+
+.arrow-btn:active {
+    transform: scale(0.95);
+}
+
+.arrow-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .separator {
