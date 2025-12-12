@@ -20,6 +20,10 @@
             --text-primary: #f0f0f0;
             --text-muted: #6a6a7a;
             --border: #2a2a3a;
+            --base-w: 380; /* design width in px */
+            --base-h: 480; /* design height in px */
+            --ui-scale: 1;
+            --global-scale: 0.8; 
         }
 
         body {
@@ -28,11 +32,26 @@
             color: var(--text-primary);
             user-select: none;
             overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* stage centers the UI and applies the scale transform */
+        .stage {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-app-region: no-drag; /* allow interactions inside */
         }
 
         .container {
-            width: 380px;
-            height: 480px;
+            width: calc(var(--base-w) * 1px);
+            height: calc(var(--base-h) * 1px);
             background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             border-radius: 24px;
             border: 1px solid var(--border);
@@ -41,6 +60,11 @@
             flex-direction: column;
             position: relative;
             overflow: hidden;
+
+            /* scale whole UI using CSS variable set from JS */
+            transform-origin: center center;
+            transform: scale(calc(var(--ui-scale) * var(--global-scale)));
+            transition: transform 120ms linear;
         }
 
         .container::before {
@@ -310,36 +334,38 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="drag-region"></div>
-        
-        <header class="header">
-            <span class="title">Deep Work</span>
-            <button class="close-btn" onclick="window.close()">✕</button>
-        </header>
+    <div class="stage">
+        <div class="container">
+            <div class="drag-region"></div>
+            
+            <header class="header">
+                <span class="title">Deep Work</span>
+                <button class="close-btn" onclick="window.close()">✕</button>
+            </header>
 
-        <div class="goal-section">
-            <label class="goal-label">Cel sesji</label>
-            <input type="text" class="goal-input" id="goalInput" placeholder="Co chcesz osiągnąć?">
-        </div>
+            <div class="goal-section">
+                <label class="goal-label">Cel sesji</label>
+                <input type="text" class="goal-input" id="goalInput" placeholder="Co chcesz osiągnąć?">
+            </div>
 
-        <div class="timer-display">
-            <svg class="progress-ring" viewBox="0 0 200 200">
-                <circle class="bg" cx="100" cy="100" r="90"/>
-                <circle class="progress" id="progressCircle" cx="100" cy="100" r="90"/>
-            </svg>
-            <div class="time" id="timerDisplay">50:00</div>
-            <div class="time-inputs">
-                <div class="time-input-group">
-                    <input type="number" class="time-input" id="minutesInput" min="0" max="999" value="50">
-                    <span class="time-input-label">Minuty</span>
+            <div class="timer-display">
+                <svg class="progress-ring" viewBox="0 0 200 200">
+                    <circle class="bg" cx="100" cy="100" r="90"/>
+                    <circle class="progress" id="progressCircle" cx="100" cy="100" r="90"/>
+                </svg>
+                <div class="time" id="timerDisplay">50:00</div>
+                <div class="time-inputs">
+                    <div class="time-input-group">
+                        <input type="number" class="time-input" id="minutesInput" min="0" max="999" value="50">
+                        <span class="time-input-label">Minuty</span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="controls">
-            <button class="btn btn-secondary" id="resetBtn">Reset</button>
-            <button class="btn btn-primary" id="startBtn">Start</button>
+            <div class="controls">
+                <button class="btn btn-secondary" id="resetBtn">Reset</button>
+                <button class="btn btn-primary" id="startBtn">Start</button>
+            </div>
         </div>
     </div>
 
@@ -507,6 +533,24 @@
                 });
             }, 600);
         }
+
+        // New: scale UI based on window size so internal elements scale together
+        function updateScale() {
+            const baseW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-w')) || 380;
+            const baseH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--base-h')) || 480;
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            // use a small margin so UI doesn't touch window edges
+            const margin = 24 * 2; // left+right padding approximated
+            const scale = Math.max(0.5, Math.min((w - margin) / baseW, (h - margin) / baseH));
+            document.documentElement.style.setProperty('--ui-scale', scale);
+        }
+
+        window.addEventListener('resize', updateScale);
+        // set initial stroke dasharray and offset
+        progressCircle.style.strokeDasharray = circumference;
+        progressCircle.style.strokeDashoffset = circumference;
+        updateScale();
 
         updateDisplay();
     </script>
