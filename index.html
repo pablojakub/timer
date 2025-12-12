@@ -127,7 +127,7 @@
             padding: 14px 16px;
             color: var(--text-primary);
             font-family: 'Outfit', sans-serif;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 300;
             transition: all 0.3s ease;
         }
@@ -187,14 +187,14 @@
         }
 
         .time-input {
-            width: 70px;
+            width: 100px;
             background: var(--bg-primary);
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 10px;
             color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 20px;
+            font-size: 26px;
             text-align: center;
             transition: all 0.3s ease;
         }
@@ -328,16 +328,11 @@
                 <circle class="bg" cx="100" cy="100" r="90"/>
                 <circle class="progress" id="progressCircle" cx="100" cy="100" r="90"/>
             </svg>
-            <div class="time" id="timerDisplay">00:00</div>
+            <div class="time" id="timerDisplay">50:00</div>
             <div class="time-inputs">
                 <div class="time-input-group">
                     <input type="number" class="time-input" id="minutesInput" min="0" max="999" value="50">
                     <span class="time-input-label">Minuty</span>
-                </div>
-                <span class="separator">:</span>
-                <div class="time-input-group">
-                    <input type="number" class="time-input" id="secondsInput" min="0" max="59" value="0">
-                    <span class="time-input-label">Sekundy</span>
                 </div>
             </div>
         </div>
@@ -353,21 +348,26 @@
         const startBtn = document.getElementById('startBtn');
         const resetBtn = document.getElementById('resetBtn');
         const minutesInput = document.getElementById('minutesInput');
-        const secondsInput = document.getElementById('secondsInput');
         const goalInput = document.getElementById('goalInput');
         const progressCircle = document.getElementById('progressCircle');
 
-        let timeLeft = 0;
-        let totalTime = 0;
+        let timeLeft = getInputTime();
+        let totalTime = timeLeft;
         let timerId = null;
         let isRunning = false;
 
         const circumference = 2 * Math.PI * 90;
 
         function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            // If there's at least one full minute left, show only whole minutes (no seconds).
+            if (seconds >= 60) {
+                const mins = Math.floor(seconds / 60);
+                // use narrow no-break space (U+202F) to reduce visual gap between number and unit
+                return `${mins}\u202Fmin`;
+            }
+
+            // If less than a minute remains, show seconds counting down.
+            return `${seconds}\u202Fsek.`;
         }
 
         function updateDisplay() {
@@ -378,13 +378,11 @@
 
         function getInputTime() {
             const minutes = parseInt(minutesInput.value) || 0;
-            const seconds = parseInt(secondsInput.value) || 0;
-            return minutes * 60 + seconds;
+            return minutes * 60;
         }
 
         function setInputsDisabled(disabled) {
             minutesInput.disabled = disabled;
-            secondsInput.disabled = disabled;
             goalInput.disabled = disabled;
         }
 
@@ -433,8 +431,10 @@
         function resetTimer() {
             clearInterval(timerId);
             isRunning = false;
-            timeLeft = 0;
-            totalTime = 0;
+            // restore minutes input to default value and reinitialize timer
+            minutesInput.value = 50;
+            timeLeft = getInputTime();
+            totalTime = timeLeft;
             timerDisplay.classList.remove('running', 'paused');
             startBtn.textContent = 'Start';
             setInputsDisabled(false);
@@ -446,14 +446,6 @@
         resetBtn.addEventListener('click', resetTimer);
 
         minutesInput.addEventListener('input', () => {
-            if (!isRunning) {
-                timeLeft = getInputTime();
-                totalTime = timeLeft;
-                updateDisplay();
-            }
-        });
-
-        secondsInput.addEventListener('input', () => {
             if (!isRunning) {
                 timeLeft = getInputTime();
                 totalTime = timeLeft;
