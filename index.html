@@ -77,17 +77,6 @@
             transition: transform 120ms linear;
         }
 
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 20%, var(--accent-glow) 0%, transparent 50%);
-            opacity: 0.15;
-            pointer-events: none;
-        }
 
         .drag-region {
             -webkit-app-region: drag;
