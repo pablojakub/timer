@@ -11,6 +11,17 @@
   "build": {
     "appId": "com.deepwork.timer",
     "productName": "Deep Work Timer",
+    "files": [
+      "**/*",
+      "music/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "music",
+        "to": "music",
+        "filter": ["**/*.mp3"]
+      }
+    ],
     "win": {
       "target": ["nsis"],
       "icon": "icon.ico",
