@@ -106,6 +106,33 @@
             text-shadow: 0 0 30px var(--accent-glow);
         }
 
+        .window-controls {
+            -webkit-app-region: no-drag;
+            display: flex;
+            gap: 8px;
+        }
+
+        .window-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 16px;
+        }
+
+        .window-btn:hover {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.1);
+        }
+
         .close-btn {
             -webkit-app-region: no-drag;
             width: 28px;
@@ -580,7 +607,11 @@
             
             <header class="header">
                 <span class="title">Deep Work</span>
-                <button class="close-btn" onclick="window.close()">✕</button>
+                <div class="window-controls">
+                    <button class="window-btn" id="minimizeBtn">−</button>
+                    <button class="window-btn" id="maximizeBtn">□</button>
+                    <button class="close-btn" onclick="window.close()">✕</button>
+                </div>
             </header>
 
             <div class="goal-section">
@@ -888,6 +919,15 @@
         document.getElementById('modalYesBtn').addEventListener('click', handleAchievementYes);
         document.getElementById('modalNoBtn').addEventListener('click', handleAchievementNo);
         document.getElementById('achievementsToggle').addEventListener('click', toggleAchievements);
+
+        // Window controls
+        document.getElementById('minimizeBtn').addEventListener('click', () => {
+            ipcRenderer.send('minimize-window');
+        });
+
+        document.getElementById('maximizeBtn').addEventListener('click', () => {
+            ipcRenderer.send('maximize-window');
+        });
 
         minutesInput.addEventListener('input', () => {
             if (!isRunning) {

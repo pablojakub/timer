@@ -38,6 +38,23 @@ app.on('activate', () => {
     }
 });
 
+// IPC handlers for window controls
+ipcMain.on('minimize-window', () => {
+    if (mainWindow) {
+        mainWindow.minimize();
+    }
+});
+
+ipcMain.on('maximize-window', () => {
+    if (mainWindow) {
+        if (mainWindow.isMaximized()) {
+            mainWindow.unmaximize();
+        } else {
+            mainWindow.maximize();
+        }
+    }
+});
+
 // IPC handlers for power save blocker
 ipcMain.on('start-power-save-blocker', () => {
     if (powerSaveBlockerId === null) {
