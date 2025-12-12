@@ -1,0 +1,29 @@
+{
+  "name": "deep-work-timer",
+  "version": "1.0.0",
+  "main": "main.js",
+  "author": "Deep Work",
+  "description": "Focus timer for deep work sessions",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.deepwork.timer",
+    "productName": "Deep Work Timer",
+    "win": {
+      "target": ["nsis"],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  }
+}
