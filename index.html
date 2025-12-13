@@ -16,6 +16,10 @@
                 <span class="title">Deep Work</span>
                 <div class="window-controls">
                     <button class="window-btn" id="themeBtn">🌙</button>
+                    <button class="window-btn streak-badge" id="streakBadge" title="Dni z rzędu">
+                        <span class="streak-icon">🔥</span>
+                        <span class="streak-count" id="streakCount">0</span>
+                    </button>
                     <button class="window-btn" id="minimizeBtn">−</button>
                     <button class="close-btn" onclick="window.close()">✕</button>
                 </div>
@@ -95,6 +99,28 @@
                 </button>
                 <div class="achievements-list-container" id="achievementsContainer" style="display: none;">
                     <ul class="achievements-list" id="achievementsList"></ul>
+                </div>
+            </div>
+
+            <!-- Streak Panel -->
+            <div class="streak-panel" id="streakPanel" style="display: none;">
+                <div class="streak-panel-header">
+                    <h3>Twój postęp</h3>
+                    <button class="streak-panel-close" id="streakPanelClose">✕</button>
+                </div>
+                <div class="streak-panel-content">
+                    <div class="streak-stat">
+                        <div class="streak-stat-label">Aktualny streak</div>
+                        <div class="streak-stat-value" id="currentStreak">0 dni</div>
+                    </div>
+                    <div class="streak-stat">
+                        <div class="streak-stat-label">Najdłuższy streak</div>
+                        <div class="streak-stat-value" id="longestStreak">0 dni</div>
+                    </div>
+                    <div class="streak-motivation" id="streakMotivation" style="display: none;">
+                        <p class="streak-quote">"Nigdy nie rezygnuj dwa razy z rzędu."</p>
+                        <p class="streak-author">- James Clear</p>
+                    </div>
                 </div>
             </div>
 
