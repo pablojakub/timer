@@ -880,7 +880,6 @@ initMusicPlayer();
 
 // Load achievements on page load
 loadTodayAchievements();
-cleanOldAchievements();
 
 // Initialize streak counter
 updateStreakBadge();
