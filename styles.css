@@ -156,9 +156,10 @@ body {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: var(--text-muted);
+    color: var(--text-primary);
     margin-bottom: 8px;
     display: block;
+    font-weight: 600;
 }
 
 .goal-input {
@@ -182,6 +183,7 @@ body {
 
 .goal-input::placeholder {
     color: var(--text-muted);
+    opacity: 0.5;
 }
 
 .goal-display {
