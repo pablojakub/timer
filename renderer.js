@@ -1,4 +1,5 @@
 const { ipcRenderer } = require('electron');
+const confetti = require('canvas-confetti');
 
 const timerDisplay = document.getElementById('timerDisplay');
 const startBtn = document.getElementById('startBtn');
@@ -245,6 +246,40 @@ function hideAchievementModal() {
     document.getElementById('achievementModal').style.display = 'none';
 }
 
+function celebrateWithConfetti() {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+
+        // Konfetti z lewego dolnego rogu
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: 0.1, y: 0.9 },
+            angle: 45,
+            colors: ['#FFD700', '#FFA500', '#FF6347', '#9370DB', '#00CED1']
+        });
+
+        // Konfetti z prawego dolnego rogu
+        confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: 0.9, y: 0.9 },
+            angle: 135,
+            colors: ['#FFD700', '#FFA500', '#FF6347', '#9370DB', '#00CED1']
+        });
+    }, 250);
+}
+
 function handleAchievementYes() {
     const goalText = goalInput.value.trim();
     if (goalText) {
@@ -252,6 +287,7 @@ function handleAchievementYes() {
         loadTodayAchievements();
     }
     hideAchievementModal();
+    celebrateWithConfetti();
 }
 
 function handleAchievementNo() {

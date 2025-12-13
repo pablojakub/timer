@@ -1,6 +1,6 @@
 {
   "name": "deep-work-timer",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "main.js",
   "author": "Deep Work",
   "description": "Focus timer for deep work sessions",
@@ -19,13 +19,19 @@
       {
         "from": "music",
         "to": "music",
-        "filter": ["**/*.mp3"]
+        "filter": [
+          "**/*.mp3"
+        ]
       }
     ],
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "icon.ico",
-      "signingHashAlgorithms": ["sha256"],
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
       "sign": null
     },
     "nsis": {
@@ -38,5 +44,8 @@
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.4"
   }
 }
