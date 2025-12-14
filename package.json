@@ -1,6 +1,6 @@
 {
   "name": "deep-work-timer",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "main": "main.js",
   "author": "Deep Work",
   "description": "Focus timer for deep work sessions",

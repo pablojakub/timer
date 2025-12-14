@@ -497,15 +497,11 @@ progressCircle.style.strokeDashoffset = circumference;
 updateScale();
 
 // Theme switching functionality
-const themeBtn = document.getElementById('themeBtn');
-
 function setTheme(theme) {
     if (theme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
-        themeBtn.textContent = '☀️';
     } else {
         document.documentElement.removeAttribute('data-theme');
-        themeBtn.textContent = '🌙';
     }
     localStorage.setItem('theme', theme);
 }
@@ -515,14 +511,87 @@ function loadTheme() {
     setTheme(savedTheme);
 }
 
-themeBtn.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-});
-
 // Load theme on page load
 loadTheme();
+
+// ============================================
+// SETTINGS PANEL FUNCTIONS
+// ============================================
+
+const settingsPanel = document.getElementById('settingsPanel');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+const darkThemeBtn = document.getElementById('darkThemeBtn');
+const lightThemeBtn = document.getElementById('lightThemeBtn');
+const askDistractionCheckbox = document.getElementById('askDistractionCheckbox');
+
+// Show settings panel
+function showSettingsPanel() {
+    // Load current settings state
+    syncSettingsPanelState();
+    settingsPanel.style.display = 'flex';
+}
+
+// Hide settings panel
+function hideSettingsPanel() {
+    settingsPanel.style.display = 'none';
+}
+
+// Sync settings panel with current preferences
+function syncSettingsPanelState() {
+    // Sync theme buttons
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    updateThemeButtonStates(currentTheme);
+
+    // Sync distraction checkbox
+    // When checked = modal WILL show (hideDistractionCheck = false)
+    // When unchecked = modal will NOT show (hideDistractionCheck = true)
+    askDistractionCheckbox.checked = !distractionCheckHidden;
+}
+
+// Update theme button visual states
+function updateThemeButtonStates(theme) {
+    if (theme === 'light') {
+        lightThemeBtn.classList.add('active');
+        darkThemeBtn.classList.remove('active');
+    } else {
+        darkThemeBtn.classList.add('active');
+        lightThemeBtn.classList.remove('active');
+    }
+}
+
+// Handle theme change from settings panel
+function handleSettingsThemeChange(newTheme) {
+    setTheme(newTheme);
+    updateThemeButtonStates(newTheme);
+}
+
+// Handle distraction checkbox change
+function handleDistractionCheckboxChange() {
+    const shouldAsk = askDistractionCheckbox.checked;
+    // When checked (should ask) -> hideDistractionCheck = false
+    // When unchecked (don't ask) -> hideDistractionCheck = true
+    saveDistractionCheckPreference(!shouldAsk);
+}
+
+// Close settings panel when clicking outside
+function handleSettingsPanelClick(event) {
+    if (event.target === settingsPanel) {
+        hideSettingsPanel();
+    }
+}
+
+// Event listeners for settings panel
+settingsBtn.addEventListener('click', showSettingsPanel);
+settingsCloseBtn.addEventListener('click', hideSettingsPanel);
+settingsPanel.addEventListener('click', handleSettingsPanelClick);
+
+// Theme button event listeners
+darkThemeBtn.addEventListener('click', () => handleSettingsThemeChange('dark'));
+lightThemeBtn.addEventListener('click', () => handleSettingsThemeChange('light'));
+
+// Distraction checkbox event listener
+askDistractionCheckbox.addEventListener('change', handleDistractionCheckboxChange);
 
 // ============================================
 // MUSIC PLAYER IMPLEMENTATION

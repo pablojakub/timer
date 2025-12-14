@@ -15,11 +15,11 @@
             <header class="header">
                 <span class="title">Deep Work</span>
                 <div class="window-controls">
-                    <button class="window-btn" id="themeBtn">🌙</button>
                     <button class="window-btn streak-badge" id="streakBadge" title="Dni z rzędu">
                         <span class="streak-icon">🔥</span>
                         <span class="streak-count" id="streakCount">0</span>
                     </button>
+                    <button class="window-btn" id="settingsBtn" title="Ustawienia">⚙️</button>
                     <button class="window-btn" id="minimizeBtn">−</button>
                     <button class="close-btn" onclick="window.close()">✕</button>
                 </div>
@@ -162,6 +162,46 @@
                     <div class="modal-actions">
                         <button class="btn btn-secondary modal-btn" id="modalDistractionNoBtn">Nie</button>
                         <button class="btn btn-primary modal-btn" id="modalDistractionYesBtn">Tak</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Panel -->
+            <div class="modal-overlay" id="settingsPanel" style="display: none;">
+                <div class="settings-dialog">
+                    <div class="settings-header">
+                        <h3 class="settings-title">Ustawienia</h3>
+                        <button class="settings-close-btn" id="settingsCloseBtn">✕</button>
+                    </div>
+                    <div class="settings-body">
+                        <!-- Theme Section -->
+                        <div class="settings-section">
+                            <div class="settings-section-title">Motyw</div>
+                            <div class="settings-control">
+                                <div class="theme-toggle-group">
+                                    <button class="theme-toggle-btn" id="darkThemeBtn" data-theme="dark">
+                                        <span class="theme-icon">🌙</span>
+                                        <span class="theme-label">Ciemny</span>
+                                    </button>
+                                    <button class="theme-toggle-btn" id="lightThemeBtn" data-theme="light">
+                                        <span class="theme-icon">☀️</span>
+                                        <span class="theme-label">Jasny</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Distractions Section -->
+                        <div class="settings-section">
+                            <div class="settings-section-title">Rozpraszacze</div>
+                            <div class="settings-control">
+                                <label class="settings-checkbox-wrapper">
+                                    <input type="checkbox" id="askDistractionCheckbox" class="settings-checkbox">
+                                    <span class="settings-checkbox-custom"></span>
+                                    <span class="settings-checkbox-label">Pytaj o rozpraszacze przed każdą sesją</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
