@@ -121,7 +121,6 @@ runner.test('Test 2: Tylko dzisiejsze osiągnięcie - streak = 1', function() {
     addAchievement(today);
     const result = calculateStreak();
     this.assertEqual(result.current, 1, 'Streak powinien być 1');
-    // showMotivation może być true lub false - nie testujemy
 });
 
 runner.test('Test 3: Ciągły streak 5 dni roboczych', function() {
@@ -132,7 +131,6 @@ runner.test('Test 3: Ciągły streak 5 dni roboczych', function() {
 
     const result = calculateStreak();
     this.assertEqual(result.current, 5, 'Streak powinien być 5');
-    // showMotivation może być true lub false - nie testujemy
 });
 
 runner.test('Test 4: Streak przez weekend (piątek -> poniedziałek)', function() {
