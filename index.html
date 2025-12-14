@@ -145,6 +145,26 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Distraction Check Modal -->
+            <div class="modal-overlay" id="distractionModal" style="display: none;">
+                <div class="modal-dialog">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Przed startem</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p class="modal-question">Czy zamknąłeś wszystkie rozpraszacze?</p>
+                        <div class="modal-checkbox-wrapper">
+                            <input type="checkbox" id="hideDistractionCheck" class="modal-checkbox">
+                            <label for="hideDistractionCheck" class="modal-checkbox-label">Nie pokazuj więcej</label>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary modal-btn" id="modalDistractionNoBtn">Nie</button>
+                        <button class="btn btn-primary modal-btn" id="modalDistractionYesBtn">Tak</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

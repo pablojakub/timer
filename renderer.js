@@ -16,6 +16,7 @@ let timeLeft = 50 * 60; // Default 50 minutes in seconds
 let totalTime = timeLeft;
 let timerId = null;
 let isRunning = false;
+let distractionCheckHidden = false;
 
 const circumference = 2 * Math.PI * 90;
 
@@ -167,57 +168,15 @@ function hideGoalDisplay() {
 }
 
 function startTimer() {
-    if (!isRunning) {
-        if (timeLeft > 0) {
-            isRunning = true;
-            timerDisplay.classList.add('running');
-            timerDisplay.classList.remove('paused');
-            startBtn.textContent = 'Pauza';
-            setInputsDisabled(true);
-            showGoalDisplay();
-
-            // Prevent computer from going to sleep
-            ipcRenderer.send('start-power-save-blocker');
-
-            timerId = setInterval(() => {
-                timeLeft--;
-                updateDisplay();
-
-                if (timeLeft <= 0) {
-                    clearInterval(timerId);
-                    isRunning = false;
-                    timerDisplay.classList.remove('running');
-                    startBtn.textContent = 'Start';
-                    setInputsDisabled(false);
-
-                    // Allow computer to sleep again
-                    ipcRenderer.send('stop-power-save-blocker');
-
-                    // Stop music when timer ends
-                    stopMusic();
-
-                    playAlertSound();
-
-                    new Notification('Deep Work', {
-                        body: goalInput.value || 'Sesja zakończona!',
-                        icon: null
-                    });
-
-                    // Show achievement modal
-                    showAchievementModal();
-                }
-            }, 1000);
+    // Check distractions ONLY when starting a new session (not pause/resume)
+    if (!isRunning && timeLeft === totalTime) {
+        if (!checkDistractionsBeforeStart()) {
+            return; // Modal was shown, wait for user response
         }
-    } else {
-        clearInterval(timerId);
-        isRunning = false;
-        timerDisplay.classList.remove('running');
-        timerDisplay.classList.add('paused');
-        startBtn.textContent = 'Wznów';
-
-        // Allow computer to sleep when paused
-        ipcRenderer.send('stop-power-save-blocker');
     }
+
+    // If we got here, we can proceed with starting (user said "Yes" or skipped modal)
+    proceedWithTimerStart();
 }
 
 function resetTimer() {
@@ -295,6 +254,106 @@ function handleAchievementNo() {
     hideAchievementModal();
 }
 
+// ============================================
+// DISTRACTION CHECK MODAL FUNCTIONS
+// ============================================
+
+function loadDistractionCheckPreference() {
+    const saved = localStorage.getItem('hideDistractionCheck');
+    distractionCheckHidden = saved === 'true';
+}
+
+function saveDistractionCheckPreference(hide) {
+    localStorage.setItem('hideDistractionCheck', hide ? 'true' : 'false');
+    distractionCheckHidden = hide;
+}
+
+function showDistractionModal() {
+    document.getElementById('hideDistractionCheck').checked = false;
+    document.getElementById('distractionModal').style.display = 'flex';
+}
+
+function hideDistractionModal() {
+    document.getElementById('distractionModal').style.display = 'none';
+}
+
+function checkDistractionsBeforeStart() {
+    if (isRunning) {
+        return true;
+    }
+
+    if (distractionCheckHidden) {
+        return true;
+    }
+
+    showDistractionModal();
+    return false;
+}
+
+function handleDistractionYes() {
+    const checkbox = document.getElementById('hideDistractionCheck');
+    if (checkbox.checked) {
+        saveDistractionCheckPreference(true);
+    }
+    hideDistractionModal();
+    proceedWithTimerStart();
+}
+
+function handleDistractionNo() {
+    const checkbox = document.getElementById('hideDistractionCheck');
+    if (checkbox.checked) {
+        saveDistractionCheckPreference(true);
+    }
+    hideDistractionModal();
+}
+
+function proceedWithTimerStart() {
+    if (!isRunning) {
+        if (timeLeft > 0) {
+            isRunning = true;
+            timerDisplay.classList.add('running');
+            timerDisplay.classList.remove('paused');
+            startBtn.textContent = 'Pauza';
+            setInputsDisabled(true);
+            showGoalDisplay();
+
+            ipcRenderer.send('start-power-save-blocker');
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    isRunning = false;
+                    timerDisplay.classList.remove('running');
+                    startBtn.textContent = 'Start';
+                    setInputsDisabled(false);
+
+                    ipcRenderer.send('stop-power-save-blocker');
+                    stopMusic();
+                    playAlertSound();
+
+                    new Notification('Deep Work', {
+                        body: goalInput.value || 'Sesja zakończona!',
+                        icon: null
+                    });
+
+                    showAchievementModal();
+                }
+            }, 1000);
+        }
+    } else {
+        clearInterval(timerId);
+        isRunning = false;
+        timerDisplay.classList.remove('running');
+        timerDisplay.classList.add('paused');
+        startBtn.textContent = 'Wznów';
+
+        ipcRenderer.send('stop-power-save-blocker');
+    }
+}
+
 function toggleAchievements() {
     const container = document.getElementById('achievementsContainer');
     const icon = document.getElementById('toggleIcon');
@@ -325,6 +384,10 @@ document.getElementById('streakBadge').addEventListener('click', toggleStreakPan
 document.getElementById('streakPanelClose').addEventListener('click', () => {
     document.getElementById('streakPanel').style.display = 'none';
 });
+
+// Distraction Check Modal Event Listeners
+document.getElementById('modalDistractionYesBtn').addEventListener('click', handleDistractionYes);
+document.getElementById('modalDistractionNoBtn').addEventListener('click', handleDistractionNo);
 
 // Arrow button event listeners
 increaseBy10Btn.addEventListener('click', () => {
@@ -768,6 +831,9 @@ loadTodayAchievements();
 
 // Initialize streak counter
 updateStreakBadge();
+
+// Load distraction check preference
+loadDistractionCheckPreference();
 
 updateDisplay();
 updateArrowButtons();

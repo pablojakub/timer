@@ -469,6 +469,66 @@ body {
     font-size: 12px;
 }
 
+/* Distraction Modal Checkbox */
+.modal-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.modal-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent);
+    appearance: none;
+    -webkit-appearance: none;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    transition: all 0.2s ease;
+}
+
+.modal-checkbox:hover {
+    border-color: var(--accent);
+    background: var(--bg-secondary);
+}
+
+.modal-checkbox:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    position: relative;
+}
+
+.modal-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.modal-checkbox-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    flex: 1;
+}
+
+.modal-checkbox-label:hover {
+    color: var(--accent);
+}
+
 /* Achievements Section */
 .achievements-section {
     margin-top: 16px;
