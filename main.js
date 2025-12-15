@@ -7,12 +7,12 @@ let powerSaveBlockerId = null;
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 400,
-        height: 560,
+        height: 660,
         minWidth: 300,
         minHeight: 320,
         alwaysOnTop: true,
         frame: false,
-        transparent: true,
+        transparent: false,
         resizable: true,
         webPreferences: {
             nodeIntegration: true,
