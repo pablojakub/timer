@@ -210,7 +210,7 @@ function celebrateWithConfetti() {
     const animationEnd = Date.now() + duration;
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
-    const interval = setInterval(function() {
+    const interval = setInterval(function () {
         const timeLeft = animationEnd - Date.now();
 
         if (timeLeft <= 0) {
@@ -475,49 +475,49 @@ if (Notification.permission === 'default') {
 
 function playAlertSound() {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
+
     const notes = [523.25, 659.25, 783.99, 1046.50];
     const noteDuration = 0.2;
     const noteGap = 0.05;
-    
+
     notes.forEach((freq, i) => {
         const startTime = audioCtx.currentTime + i * (noteDuration + noteGap);
-        
+
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        
+
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(freq, startTime);
-        
+
         gainNode.gain.setValueAtTime(0, startTime);
         gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.02);
         gainNode.gain.linearRampToValueAtTime(0, startTime + noteDuration);
-        
+
         oscillator.start(startTime);
         oscillator.stop(startTime + noteDuration);
     });
-    
+
     setTimeout(() => {
         const startTime = audioCtx.currentTime;
         notes.forEach((freq, i) => {
             const noteStart = startTime + i * (noteDuration + noteGap);
-            
+
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            
+
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(freq, noteStart);
-            
+
             gainNode.gain.setValueAtTime(0, noteStart);
             gainNode.gain.linearRampToValueAtTime(0.3, noteStart + 0.02);
             gainNode.gain.linearRampToValueAtTime(0, noteStart + noteDuration);
-            
+
             oscillator.start(noteStart);
             oscillator.stop(noteStart + noteDuration);
         });
@@ -532,7 +532,7 @@ function updateScale() {
     const h = window.innerHeight;
     // use a small margin so UI doesn't touch window edges
     const margin = 24 * 2; // left+right padding approximated
-    const scale = Math.max(0.5, Math.min((w - margin) / baseW, (h - margin) / baseH));
+    const scale = Math.max(0.5, Math.min((w - margin) / baseW, (h - margin) / baseH)) * 1.2;
     document.documentElement.style.setProperty('--ui-scale', scale);
 }
 

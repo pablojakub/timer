@@ -1,4 +1,4 @@
-const { app, BrowserWindow, powerSaveBlocker, ipcMain } = require('electron');
+const { app, BrowserWindow, powerSaveBlocker, ipcMain, screen } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -7,7 +7,7 @@ let powerSaveBlockerId = null;
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 400,
-        height: 500,
+        height: 560,
         minWidth: 300,
         minHeight: 320,
         alwaysOnTop: true,
