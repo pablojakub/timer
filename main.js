@@ -58,6 +58,9 @@ ipcMain.on('maximize-window', () => {
         const screenWidth = display.workAreaSize.width;
 
         if (isLargeSize) {
+            // Disable CSS transitions before resize
+            mainWindow.webContents.send('disable-transitions');
+
             // Return to small size at saved position
             if (savedPosition) {
                 mainWindow.setBounds({
@@ -65,11 +68,17 @@ ipcMain.on('maximize-window', () => {
                     y: savedPosition.y,
                     width: SMALL_SIZE.width,
                     height: SMALL_SIZE.height
-                });
+                }, true);
                 savedPosition = null;
             } else {
-                mainWindow.setSize(SMALL_SIZE.width, SMALL_SIZE.height);
+                mainWindow.setSize(SMALL_SIZE.width, SMALL_SIZE.height, true);
             }
+
+            // Re-enable transitions after a short delay
+            setTimeout(() => {
+                mainWindow.webContents.send('enable-transitions');
+            }, 100);
+
             isLargeSize = false;
         } else {
             // Save current position
@@ -90,13 +99,22 @@ ipcMain.on('maximize-window', () => {
             }
             newY = bounds.y; // Keep same y position
 
+            // Disable CSS transitions before resize
+            mainWindow.webContents.send('disable-transitions');
+
             // Set new size and position
             mainWindow.setBounds({
                 x: newX,
                 y: newY,
                 width: LARGE_SIZE.width,
                 height: LARGE_SIZE.height
-            });
+            }, true); // animate = true for smooth OS-level animation
+
+            // Re-enable transitions after a short delay
+            setTimeout(() => {
+                mainWindow.webContents.send('enable-transitions');
+            }, 100);
+
             isLargeSize = true;
         }
     }

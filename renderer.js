@@ -957,3 +957,18 @@ loadDistractionCheckPreference();
 updateDisplay();
 updateArrowButtons();
 showTimerControls();
+
+// Listen for transition control from main process
+ipcRenderer.on('disable-transitions', () => {
+    const container = document.querySelector('.container');
+    if (container) {
+        container.style.transition = 'none';
+    }
+});
+
+ipcRenderer.on('enable-transitions', () => {
+    const container = document.querySelector('.container');
+    if (container) {
+        container.style.transition = 'transform 120ms linear';
+    }
+});
