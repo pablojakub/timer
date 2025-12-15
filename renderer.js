@@ -254,6 +254,51 @@ function handleAchievementNo() {
     hideAchievementModal();
 }
 
+function handleAchievementExtend() {
+    // Close the modal
+    hideAchievementModal();
+
+    // Set timer to 5 minutes (300 seconds)
+    timeLeft = 5 * 60;
+    totalTime = timeLeft;
+    updateDisplay();
+
+    // Automatically start the timer (without distraction check)
+    isRunning = true;
+    timerDisplay.classList.add('running');
+    timerDisplay.classList.remove('paused');
+    startBtn.textContent = 'Pauza';
+    setInputsDisabled(true);
+    showGoalDisplay();
+
+    ipcRenderer.send('start-power-save-blocker');
+
+    timerId = setInterval(() => {
+        timeLeft--;
+        updateDisplay();
+
+        if (timeLeft <= 0) {
+            clearInterval(timerId);
+            isRunning = false;
+            timerDisplay.classList.remove('running');
+            startBtn.textContent = 'Start';
+            setInputsDisabled(false);
+
+            ipcRenderer.send('stop-power-save-blocker');
+            stopMusic();
+            playAlertSound();
+
+            new Notification('Deep Work', {
+                body: goalInput.value || 'Sesja zakończona!',
+                icon: null
+            });
+
+            // Show achievement modal again after the 5-minute session
+            showAchievementModal();
+        }
+    }, 1000);
+}
+
 // ============================================
 // DISTRACTION CHECK MODAL FUNCTIONS
 // ============================================
@@ -377,6 +422,7 @@ startBtn.addEventListener('click', startTimer);
 resetBtn.addEventListener('click', resetTimer);
 document.getElementById('modalYesBtn').addEventListener('click', handleAchievementYes);
 document.getElementById('modalNoBtn').addEventListener('click', handleAchievementNo);
+document.getElementById('modalExtendBtn').addEventListener('click', handleAchievementExtend);
 document.getElementById('achievementsToggle').addEventListener('click', toggleAchievements);
 
 // Streak panel event listeners

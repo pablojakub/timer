@@ -412,7 +412,7 @@ body {
     border: 1px solid var(--accent);
     border-radius: 16px;
     padding: 24px;
-    max-width: 280px;
+    max-width: 320px;
     box-shadow: 0 0 40px var(--accent-glow);
     animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -449,16 +449,18 @@ body {
 }
 
 .modal-goal-text {
-    font-size: 12px;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text-muted);
+    font-size: 15px;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-primary);
     text-align: center;
-    padding: 8px 12px;
+    padding: 12px 16px;
     background: var(--bg-primary);
     border-radius: 8px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--accent);
     margin: 0;
     word-wrap: break-word;
+    font-weight: 600;
+    line-height: 1.5;
 }
 
 .modal-actions {
@@ -468,6 +470,37 @@ body {
 
 .modal-btn {
     flex: 1;
+    padding: 12px;
+    font-size: 12px;
+}
+
+/* Warning button style for "Need 5 more minutes" */
+.btn-warning {
+    background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+    color: #1a1a1f;
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.4);
+    font-weight: 700;
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(255, 215, 0, 0.5);
+}
+
+.btn-warning:active {
+    transform: translateY(0);
+}
+
+/* Secondary action row for extended modal */
+.modal-actions-secondary {
+    display: flex;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.modal-btn-full {
+    width: 100%;
     padding: 12px;
     font-size: 12px;
 }
@@ -925,7 +958,7 @@ body {
 
 .streak-count {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
 }
 
