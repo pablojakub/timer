@@ -4,7 +4,6 @@ const confetti = require('canvas-confetti');
 const timerDisplay = document.getElementById('timerDisplay');
 const startBtn = document.getElementById('startBtn');
 const resetBtn = document.getElementById('resetBtn');
-const timerControls = document.getElementById('timerControls');
 const goalInput = document.getElementById('goalInput');
 const progressCircle = document.getElementById('progressCircle');
 const increaseBy10Btn = document.getElementById('increaseBy10');
@@ -114,30 +113,6 @@ function loadTodayAchievements() {
     if (achievements.length > 0) {
         document.getElementById('achievementsSection').style.display = 'block';
     }
-}
-
-function cleanOldAchievements() {
-    const today = getTodayKey();
-    const keysToRemove = [];
-
-    // Find all achievement keys
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('achievements_') && key !== today) {
-            keysToRemove.push(key);
-        }
-    }
-
-    // Remove old keys (older than 30 days)
-    keysToRemove.forEach(key => {
-        const dateStr = key.replace('achievements_', '');
-        const keyDate = new Date(dateStr);
-        const daysDiff = (Date.now() - keyDate.getTime()) / (1000 * 60 * 60 * 24);
-
-        if (daysDiff > 30) {
-            localStorage.removeItem(key);
-        }
-    });
 }
 
 function setInputsDisabled(disabled) {
@@ -480,34 +455,23 @@ if (Notification.permission === 'default') {
 function playAlertSound() {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    const notes = [523.25, 659.25, 783.99, 1046.50];
-    const noteDuration = 0.2;
-    const noteGap = 0.05;
+    // Five short, uplifting melodies (frequencies in Hz).
+    // Each tune includes notes, per-note duration, gap and oscillator type to vary timbre.
+    const tunes = [
+        { notes: [523.25, 659.25, 783.99, 1046.50], noteDuration: 0.20, noteGap: 0.05, type: 'sine' }, // C major arpeggio
+        { notes: [392.00, 493.88, 523.25, 659.25, 783.99], noteDuration: 0.18, noteGap: 0.04, type: 'triangle' }, // rising motif
+        { notes: [880.00, 987.77, 1046.50, 1318.51], noteDuration: 0.15, noteGap: 0.03, type: 'square' }, // bright fanfare
+        { notes: [523.25, 659.25, 880.00, 1046.50, 1318.51], noteDuration: 0.14, noteGap: 0.03, type: 'sine' }, // upbeat arpeggio
+        { notes: [659.25, 783.99, 987.77, 1174.66, 1318.51], noteDuration: 0.16, noteGap: 0.04, type: 'triangle' } // pentatonic-ish rise
+    ];
 
-    notes.forEach((freq, i) => {
-        const startTime = audioCtx.currentTime + i * (noteDuration + noteGap);
+    // Pick a random tune
+    const tune = tunes[Math.floor(Math.random() * tunes.length)];
 
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(freq, startTime);
-
-        gainNode.gain.setValueAtTime(0, startTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.02);
-        gainNode.gain.linearRampToValueAtTime(0, startTime + noteDuration);
-
-        oscillator.start(startTime);
-        oscillator.stop(startTime + noteDuration);
-    });
-
-    setTimeout(() => {
-        const startTime = audioCtx.currentTime;
-        notes.forEach((freq, i) => {
-            const noteStart = startTime + i * (noteDuration + noteGap);
+    // Helper to play one pass of the tune with a given offset
+    function playPass(offset = 0) {
+        tune.notes.forEach((freq, i) => {
+            const startTime = audioCtx.currentTime + offset + i * (tune.noteDuration + tune.noteGap);
 
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -515,17 +479,23 @@ function playAlertSound() {
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
 
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(freq, noteStart);
+            oscillator.type = tune.type;
+            oscillator.frequency.setValueAtTime(freq, startTime);
 
-            gainNode.gain.setValueAtTime(0, noteStart);
-            gainNode.gain.linearRampToValueAtTime(0.3, noteStart + 0.02);
-            gainNode.gain.linearRampToValueAtTime(0, noteStart + noteDuration);
+            // simple attack & release envelope
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(0.35, startTime + 0.02);
+            gainNode.gain.linearRampToValueAtTime(0, startTime + tune.noteDuration);
 
-            oscillator.start(noteStart);
-            oscillator.stop(noteStart + noteDuration);
+            oscillator.start(startTime);
+            oscillator.stop(startTime + tune.noteDuration);
         });
-    }, 600);
+    }
+
+    // Play the selected tune twice with a small pause between passes for emphasis
+    playPass(0);
+    const passLength = tune.notes.length * (tune.noteDuration + tune.noteGap);
+    setTimeout(() => playPass(1), Math.max(300, passLength * 1000 + 120));
 }
 
 // New: scale UI based on window size so internal elements scale together
