@@ -12,8 +12,10 @@
     --text-primary: #f0f0f0;
     --text-muted: #6a6a7a;
     --border: #2a2a3a;
-    --base-w: 380; /* design width in px */
-    --base-h: 480; /* design height in px */
+    --base-w: 380;
+    /* design width in px */
+    --base-h: 480;
+    /* design height in px */
     --ui-scale: 1;
     --global-scale: 0.8;
     --shadow: 0 8px 32px rgba(255, 255, 255, 0.1), 0 2px 8px rgba(255, 255, 255, 0.05);
@@ -29,6 +31,7 @@
 }
 
 body {
+    padding: 16px 0px 0px 16px;
     font-family: 'Outfit', sans-serif;
     background: transparent;
     color: var(--text-primary);
@@ -48,7 +51,8 @@ body {
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
-    -webkit-app-region: no-drag; /* allow interactions inside */
+    -webkit-app-region: no-drag;
+    /* allow interactions inside */
     position: relative;
 }
 
@@ -377,8 +381,15 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .time.paused {
@@ -403,8 +414,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .modal-dialog {
@@ -418,8 +434,15 @@ body {
 }
 
 @keyframes scaleIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .modal-header {
@@ -672,6 +695,7 @@ body {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -982,6 +1006,7 @@ body {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1264,12 +1289,12 @@ body {
     position: relative;
 }
 
-.settings-checkbox:checked + .settings-checkbox-custom {
+.settings-checkbox:checked+.settings-checkbox-custom {
     background: var(--accent);
     border-color: var(--accent);
 }
 
-.settings-checkbox:checked + .settings-checkbox-custom::after {
+.settings-checkbox:checked+.settings-checkbox-custom::after {
     content: '✓';
     color: white;
     font-weight: bold;
