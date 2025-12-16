@@ -180,38 +180,82 @@ function hideAchievementModal() {
     document.getElementById('achievementModal').style.display = 'none';
 }
 
+let confettiCanvasEl = null;
+let myConfetti = null;
+let confettiIntervalId = null;
+
+function ensureConfettiCanvas() {
+    const container = document.querySelector('.container');
+    if (!container) return null;
+
+    // Ensure the container is positioned so the absolutely-positioned canvas is relative to it
+    const cs = getComputedStyle(container);
+    if (!cs || cs.position === 'static') {
+        container.style.position = 'relative';
+    }
+
+    // If canvas already exists and is inside container, reuse it
+    if (confettiCanvasEl && container.contains(confettiCanvasEl)) {
+        return container;
+    }
+
+    // Create canvas overlay inside the container
+    confettiCanvasEl = document.createElement('canvas');
+    confettiCanvasEl.style.position = 'absolute';
+    confettiCanvasEl.style.top = '0';
+    confettiCanvasEl.style.left = '0';
+    confettiCanvasEl.style.width = '100%';
+    confettiCanvasEl.style.height = '100%';
+    confettiCanvasEl.style.pointerEvents = 'none';
+    confettiCanvasEl.style.zIndex = '2147483647'; // ensure it's on top of everything in the container
+    confettiCanvasEl.className = 'confetti-canvas';
+
+    container.appendChild(confettiCanvasEl);
+
+    // Bind canvas-confetti to the canvas so origin coords are relative to the container
+    myConfetti = confetti.create(confettiCanvasEl, { resize: true, useWorker: true });
+
+    return container;
+}
+
 function celebrateWithConfetti() {
-    const duration = 3000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+    const container = ensureConfettiCanvas();
+    if (!container || !myConfetti) return;
 
-    const interval = setInterval(function () {
-        const timeLeft = animationEnd - Date.now();
+    const bursts = 4; // fire 4 times
+    const intervalMs = 1000; // 1000ms between bursts
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
 
-        if (timeLeft <= 0) {
-            return clearInterval(interval);
+    // Clear any existing interval to avoid overlapping celebrations
+    if (confettiIntervalId) {
+        clearInterval(confettiIntervalId);
+        confettiIntervalId = null;
+    }
+
+    let fired = 0;
+    confettiIntervalId = setInterval(function () {
+        if (fired >= bursts) {
+            clearInterval(confettiIntervalId);
+            confettiIntervalId = null;
+            return;
         }
 
-        const particleCount = 50 * (timeLeft / duration);
+        fired += 1;
 
-        // Konfetti z lewego dolnego rogu
-        confetti({
+        // particle count can taper a bit as bursts proceed
+        const particleCount = Math.max(12, Math.floor(60 * (1 - (fired - 1) / bursts)));
+
+        // Random origin inside container (values 0..1 are relative to canvas size)
+        const originX = Math.random();
+        const originY = Math.random();
+
+        myConfetti({
             ...defaults,
             particleCount,
-            origin: { x: 0.1, y: 0.9 },
-            angle: 45,
+            origin: { x: originX, y: originY },
             colors: ['#FFD700', '#FFA500', '#FF6347', '#9370DB', '#00CED1']
         });
-
-        // Konfetti z prawego dolnego rogu
-        confetti({
-            ...defaults,
-            particleCount,
-            origin: { x: 0.9, y: 0.9 },
-            angle: 135,
-            colors: ['#FFD700', '#FFA500', '#FF6347', '#9370DB', '#00CED1']
-        });
-    }, 250);
+    }, intervalMs);
 }
 
 function handleAchievementYes() {
