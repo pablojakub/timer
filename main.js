@@ -16,12 +16,13 @@ function createWindow() {
         resizable: false,
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false
+            contextIsolation: false,
         }
     });
 
     mainWindow.loadFile('index.html');
     mainWindow.setAlwaysOnTop(true, 'floating');
+    // mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
 app.whenReady().then(createWindow);
