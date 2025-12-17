@@ -85,6 +85,7 @@ async function fetchMotivationalMessage(goalText) {
     try {
         const openai = createOpenAIClient(apiKey);
 
+        console.log('Sending request to OpenAI...');
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
@@ -95,15 +96,30 @@ async function fetchMotivationalMessage(goalText) {
             max_tokens: 100
         });
 
+        console.log('OpenAI response received:', {
+            id: completion.id,
+            model: completion.model,
+            choices: completion.choices?.length,
+            firstChoice: completion.choices?.[0]
+        });
+
         const message = completion.choices?.[0]?.message?.content?.trim();
 
         if (!message) {
+            console.error('Empty message from API. Full response:', JSON.stringify(completion, null, 2));
             throw new Error('Empty response from API');
         }
 
+        console.log('Successfully extracted message:', message);
         return message;
     } catch (error) {
-        console.error('OpenAI API error:', error.message);
+        console.error('OpenAI API error details:', {
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause,
+            status: error.status,
+            headers: error.headers
+        });
 
         // Return fallback quote on any error
         return FALLBACK_QUOTE;
