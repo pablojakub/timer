@@ -492,6 +492,66 @@ document.getElementById('maximizeBtn').addEventListener('click', () => {
     ipcRenderer.send('maximize-window');
 });
 
+// Close button + confirmation modal
+const closeBtn = document.getElementById('closeBtn');
+const closeConfirmModal = document.getElementById('closeConfirmModal');
+const closeConfirmYesBtn = document.getElementById('closeConfirmYesBtn');
+const closeConfirmNoBtn = document.getElementById('closeConfirmNoBtn');
+
+function showCloseConfirmModal() {
+    if (closeConfirmModal) {
+        closeConfirmModal.style.display = 'flex';
+        if (closeConfirmYesBtn) closeConfirmYesBtn.focus();
+    }
+}
+
+function hideCloseConfirmModal() {
+    if (closeConfirmModal) {
+        closeConfirmModal.style.display = 'none';
+    }
+}
+
+if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+        if (isRunning) {
+            showCloseConfirmModal();
+        } else {
+            ipcRenderer.send('close-window');
+        }
+    });
+}
+
+if (closeConfirmYesBtn) {
+    closeConfirmYesBtn.addEventListener('click', () => {
+        // ensure we clean up running session before closing the window
+        try {
+            resetTimer();
+        } catch (e) {
+            // ignore cleanup errors
+        }
+        ipcRenderer.send('close-window');
+    });
+}
+
+if (closeConfirmNoBtn) {
+    closeConfirmNoBtn.addEventListener('click', hideCloseConfirmModal);
+}
+
+if (closeConfirmModal) {
+    closeConfirmModal.addEventListener('click', (e) => {
+        if (e.target === closeConfirmModal) {
+            hideCloseConfirmModal();
+        }
+    });
+}
+
+// allow closing the confirmation modal with Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && closeConfirmModal && closeConfirmModal.style.display === 'flex') {
+        hideCloseConfirmModal();
+    }
+});
+
 if (Notification.permission === 'default') {
     Notification.requestPermission();
 }

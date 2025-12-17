@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deep Work Timer</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="stage">
         <div class="container">
             <div class="drag-region"></div>
-            
+
             <header class="header">
                 <span class="title">Deep Work</span>
                 <div class="window-controls">
@@ -22,20 +26,21 @@
                     <button class="window-btn" id="settingsBtn" title="Ustawienia">⚙️</button>
                     <button class="window-btn" id="maximizeBtn" title="Powiększ/Zmniejsz">▢</button>
                     <button class="window-btn" id="minimizeBtn" title="Minimalizuj">−</button>
-                    <button class="close-btn" onclick="window.close()">✕</button>
+                    <button class="close-btn" id="closeBtn" title="Zamknij">✕</button>
                 </div>
             </header>
 
             <div class="goal-section">
                 <label class="goal-label" id="goalLabel">Cel sesji</label>
-                <input type="text" class="goal-input" id="goalInput" placeholder="Zaimplementować X w module Y" title="Po czym poznam, że cel został osiągnięty?">
+                <input type="text" class="goal-input" id="goalInput" placeholder="Zaimplementować X w module Y"
+                    title="Po czym poznam, że cel został osiągnięty?">
                 <h2 class="goal-display" id="goalDisplay" style="display: none;"></h2>
             </div>
 
             <div class="timer-display">
                 <svg class="progress-ring" viewBox="0 0 200 200">
-                    <circle class="bg" cx="100" cy="100" r="90"/>
-                    <circle class="progress" id="progressCircle" cx="100" cy="100" r="90"/>
+                    <circle class="bg" cx="100" cy="100" r="90" />
+                    <circle class="progress" id="progressCircle" cx="100" cy="100" r="90" />
                 </svg>
                 <div class="timer-controls" id="timerControls">
                     <div class="arrow-buttons-left">
@@ -145,7 +150,8 @@
                         <button class="btn btn-primary modal-btn" id="modalYesBtn">Tak</button>
                     </div>
                     <div class="modal-actions-secondary">
-                        <button class="btn btn-warning modal-btn-full" id="modalExtendBtn">Potrzebuję jeszcze 5 minut</button>
+                        <button class="btn btn-warning modal-btn-full" id="modalExtendBtn">Potrzebuję jeszcze 5
+                            minut</button>
                     </div>
                 </div>
             </div>
@@ -166,6 +172,23 @@
                     <div class="modal-actions">
                         <button class="btn btn-secondary modal-btn" id="modalDistractionNoBtn">Nie</button>
                         <button class="btn btn-primary modal-btn" id="modalDistractionYesBtn">Tak</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Close Confirmation Modal -->
+            <div class="modal-overlay" id="closeConfirmModal" style="display: none;">
+                <div class="modal-dialog">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Zamykanie aplikacji</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p class="modal-question">Czy na pewno chcesz zamknąć aplikację? Obecnie trwająca sesja zostanie
+                            przerwana.</p>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary modal-btn" id="closeConfirmNoBtn">Anuluj</button>
+                        <button class="btn btn-primary modal-btn" id="closeConfirmYesBtn">Zamknij</button>
                     </div>
                 </div>
             </div>
@@ -212,7 +235,8 @@
         </div>
     </div>
 
- <script src="streakCounter.js"></script>
- <script src="renderer.js"></script>
+    <script src="streakCounter.js"></script>
+    <script src="renderer.js"></script>
 </body>
+
 </html>

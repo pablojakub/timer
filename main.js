@@ -45,6 +45,12 @@ ipcMain.on('minimize-window', () => {
     }
 });
 
+ipcMain.on('close-window', () => {
+    if (mainWindow) {
+        mainWindow.close();
+    }
+});
+
 // Window size states
 const SMALL_SIZE = { width: 400, height: 660 };
 const LARGE_SIZE = { width: 550, height: 940 };
