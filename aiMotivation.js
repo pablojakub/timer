@@ -8,7 +8,20 @@ const OpenAI = require('openai');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
 const API_TIMEOUT = 3000; // 3 seconds
-const FALLBACK_QUOTE = "Skupiony głupiec osiągnie więcej niż rozkojarzony mędrzec";
+const FALLBACK_QUOTES =
+    [
+        "Skupiony głupiec osiągnie więcej niż rozkojarzony mędrzec.",
+        "Osoby w stanie flow zwiększają wydajność o około 500% w porównaniu do pracy rozproszonej.",
+        "Koncentracja jest siłą, której nie zastąpi żaden talent.",
+        "Rozproszenie czyni mistrza podobnym do ucznia.",
+        "Badania pokazują, że głęboka praca zwiększa produktywność nawet czterokrotnie.",
+        "Badania: po przerwaniu potrzeba średnio 23 min, aby wrócić do pierwotnego skupienia.",
+        "Kto kontroluje uwagę, kontroluje wynik.",
+        "Rozkojarzenie jest wrogiem jakości, nie braku wiedzy.",
+        "Eliminacja multitaskingu zwiększa szybkość wykonania zadań o 40% i redukuje liczbę błędów o połowę.",
+        "Praca w blokach 90 minut zwiększa zatrzymanie informacji o 30% w porównaniu do pracy przerywanej."
+    ];
+
 
 const SYSTEM_PROMPT = `Jesteś mentorem dla programistów seniorów i ekspertem metodologii Deep Work i neuronauki. Twoim celem jest przygotowanie umysłu użytkownika do sesji pracy głębokiem. Generuj jedno, krótkie, zwięzłe zdanie w języku polskim (Maksymalnie 20 słów). Odpowiedź musi odnosić się do konkretnego zadania użytkownika. Styl: stoicki, oparty na faktach, motywujący, ale bez wykrzykników i taniego coachingu. Skup się na jakości, skupieniu, braku błędów i koniecznie korzyściach płynących ze stanu 'flow'.`;
 
@@ -32,7 +45,7 @@ function hasApiKey() {
     const settings = getAISettings();
     if (settings.provider === 'azure') {
         return settings.azureApiKey && settings.azureApiKey.trim().length > 0 &&
-               settings.azureEndpoint && settings.azureEndpoint.trim().length > 0;
+            settings.azureEndpoint && settings.azureEndpoint.trim().length > 0;
     } else {
         return settings.openaiApiKey && settings.openaiApiKey.trim().length > 0;
     }
@@ -43,9 +56,9 @@ function hasApiKey() {
  */
 function getProxyUrl() {
     return process.env.HTTPS_PROXY ||
-           process.env.HTTP_PROXY ||
-           process.env.https_proxy ||
-           process.env.http_proxy;
+        process.env.HTTP_PROXY ||
+        process.env.https_proxy ||
+        process.env.http_proxy;
 }
 
 /**
@@ -169,7 +182,7 @@ async function fetchMotivationalMessage(goalText) {
         });
 
         // Return fallback quote on any error
-        return FALLBACK_QUOTE;
+        return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
     }
 }
 
@@ -178,7 +191,8 @@ async function fetchMotivationalMessage(goalText) {
  */
 async function getMotivationalMessage(goalText) {
     if (!hasApiKey()) {
-        return null; // Skip motivation if no API key
+        // No API key configured — return a random motivational quote
+        return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
     }
 
     try {
@@ -186,7 +200,7 @@ async function getMotivationalMessage(goalText) {
         return message;
     } catch (error) {
         console.error('Failed to get motivational message:', error);
-        return FALLBACK_QUOTE;
+        return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
     }
 }
 
@@ -195,6 +209,6 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         hasApiKey,
         getMotivationalMessage,
-        FALLBACK_QUOTE
+        FALLBACK_QUOTES
     };
 }

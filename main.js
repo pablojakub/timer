@@ -1,5 +1,4 @@
 const { app, BrowserWindow, powerSaveBlocker, ipcMain, screen } = require('electron');
-const path = require('path');
 
 let mainWindow;
 let settingsWindow = null;

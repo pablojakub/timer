@@ -404,31 +404,27 @@ function hideMotivationOverlay() {
 async function showMotivationAndStart() {
     const goalText = goalInput.value.trim();
 
-    // Check if AI motivation is enabled (API key configured)
-    if (typeof hasApiKey === 'function' && hasApiKey()) {
-        try {
-            // Start timer immediately in background
+    try {
+        // Start timer immediately in background
+
+        // Fetch motivational message
+        const message = await getMotivationalMessage(goalText);
+
+        if (message) {
+            // Show overlay with message
+            showMotivationOverlay(message);
+
+            // Hide overlay after 5 seconds
+            setTimeout(() => {
+                hideMotivationOverlay();
+                proceedWithTimerStart();
+            }, 5000);
+        } else {
             proceedWithTimerStart();
-
-            // Fetch motivational message
-            const message = await getMotivationalMessage(goalText);
-
-            if (message) {
-                // Show overlay with message
-                showMotivationOverlay(message);
-
-                // Hide overlay after 5 seconds
-                setTimeout(() => {
-                    hideMotivationOverlay();
-                }, 5000);
-            }
-        } catch (error) {
-            console.error('Error showing motivation:', error);
-            // Timer already started, just continue
         }
-    } else {
-        // No API key configured, start timer directly
-        proceedWithTimerStart();
+    } catch (error) {
+        console.error('Error showing motivation:', error);
+        // Timer already started, just continue
     }
 }
 
