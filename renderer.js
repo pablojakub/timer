@@ -417,10 +417,10 @@ async function showMotivationAndStart() {
                 // Show overlay with message
                 showMotivationOverlay(message);
 
-                // Hide overlay after 2.5 seconds
+                // Hide overlay after 5 seconds
                 setTimeout(() => {
                     hideMotivationOverlay();
-                }, 2500);
+                }, 5000);
             }
         } catch (error) {
             console.error('Error showing motivation:', error);

@@ -74,14 +74,7 @@ async function fetchMotivationalMessage(goalText) {
 
         return message;
     } catch (error) {
-        console.log('Error fetching motivational message:', error);
         clearTimeout(timeoutId);
-
-        if (error.name === 'AbortError') {
-            console.warn('AI motivation request timed out');
-        } else {
-            console.error('AI motivation error:', error);
-        }
 
         // Return fallback quote on any error
         return FALLBACK_QUOTE;
