@@ -35,6 +35,17 @@ function createWindow() {
             settingsWindow = null;
         }
     });
+
+    // Ensure settings window minimizes when main window is minimized
+    mainWindow.on('minimize', () => {
+        if (settingsWindow) {
+            try {
+                settingsWindow.minimize();
+            } catch (e) {
+                console.error('Failed to minimize settings window on main minimize', e);
+            }
+        }
+    });
     // mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
@@ -56,6 +67,15 @@ app.on('activate', () => {
 ipcMain.on('minimize-window', () => {
     if (mainWindow) {
         mainWindow.minimize();
+    }
+
+    // Also minimize settings window if it's open
+    if (settingsWindow) {
+        try {
+            settingsWindow.minimize();
+        } catch (e) {
+            console.error('Failed to minimize settings window via IPC', e);
+        }
     }
 });
 
