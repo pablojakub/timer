@@ -1313,3 +1313,162 @@ body {
     line-height: 1.4;
     flex: 1;
 }
+
+/* ============================================ */
+/* SETTINGS INPUT FIELD STYLES                 */
+/* ============================================ */
+
+.settings-input-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.settings-input {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.settings-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+.settings-hint {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+/* ============================================ */
+/* MOTIVATIONAL OVERLAY STYLES                 */
+/* ============================================ */
+
+/* Fullscreen overlay */
+.motivation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg,
+            rgba(255, 107, 53, 0.95) 0%,
+            rgba(255, 140, 90, 0.98) 100%);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    border-radius: 24px;
+    animation: motivationFadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes motivationFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.motivation-content {
+    max-width: 85%;
+    text-align: center;
+    animation: motivationContentSlide 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes motivationContentSlide {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.motivation-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    animation: motivationIconPulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.4));
+}
+
+@keyframes motivationIconPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+.motivation-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    padding: 0 20px;
+    animation: motivationTextGlow 2s ease-in-out infinite;
+}
+
+@keyframes motivationTextGlow {
+
+    0%,
+    100% {
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    50% {
+        text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5),
+            0 0 30px rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Light theme adjustments */
+:root[data-theme="light"] .motivation-overlay {
+    background: linear-gradient(135deg,
+            rgba(255, 107, 53, 0.92) 0%,
+            rgba(255, 140, 90, 0.95) 100%);
+}
+
+:root[data-theme="light"] .motivation-text {
+    color: #ffffff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
