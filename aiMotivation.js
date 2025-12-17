@@ -1,30 +1,54 @@
 /**
  * AI Motivation Module
- * Handles OpenAI API calls for motivational messages
- * Uses official OpenAI client with proxy support (for Zscaler compatibility)
+ * Handles OpenAI and Azure OpenAI API calls for motivational messages
+ * Supports both standard OpenAI and Azure OpenAI with Zscaler compatibility
  */
 
 const OpenAI = require('openai');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
 const API_TIMEOUT = 3000; // 3 seconds
-const FALLBACK_QUOTE = "Skupiony głupiec osiągnie więcej niż rozkojarzony mędrzec";
+const FALLBACK_QUOTES =
+    [
+        "Skupiony głupiec osiągnie więcej niż rozkojarzony mędrzec.",
+        "Osoby w stanie flow zwiększają wydajność o około 500% w porównaniu do pracy rozproszonej.",
+        "Koncentracja jest siłą, której nie zastąpi żaden talent.",
+        "Rozproszenie czyni mistrza podobnym do ucznia.",
+        "Badania pokazują, że głęboka praca zwiększa produktywność nawet czterokrotnie.",
+        "Badania: po przerwaniu potrzeba średnio 23 min, aby wrócić do pierwotnego skupienia.",
+        "Kto kontroluje uwagę, kontroluje wynik.",
+        "Rozkojarzenie jest wrogiem jakości, nie braku wiedzy.",
+        "Eliminacja multitaskingu zwiększa szybkość wykonania zadań o 40% i redukuje liczbę błędów o połowę.",
+        "Praca w blokach 90 minut zwiększa zatrzymanie informacji o 30% w porównaniu do pracy przerywanej."
+    ];
+
 
 const SYSTEM_PROMPT = `Jesteś mentorem dla programistów seniorów i ekspertem metodologii Deep Work i neuronauki. Twoim celem jest przygotowanie umysłu użytkownika do sesji pracy głębokiem. Generuj jedno, krótkie, zwięzłe zdanie w języku polskim (Maksymalnie 20 słów). Odpowiedź musi odnosić się do konkretnego zadania użytkownika. Styl: stoicki, oparty na faktach, motywujący, ale bez wykrzykników i taniego coachingu. Skup się na jakości, skupieniu, braku błędów i koniecznie korzyściach płynących ze stanu 'flow'.`;
 
 /**
- * Get OpenAI API key from localStorage
+ * Get AI provider settings from localStorage
  */
-function getApiKey() {
-    return localStorage.getItem('openai_api_key');
+function getAISettings() {
+    return {
+        provider: localStorage.getItem('ai_provider') || 'openai', // 'openai' or 'azure'
+        openaiApiKey: localStorage.getItem('openai_api_key'),
+        azureEndpoint: localStorage.getItem('azure_endpoint'),
+        azureApiKey: localStorage.getItem('azure_api_key'),
+        azureDeployment: localStorage.getItem('azure_deployment') || 'gpt-4o-mini'
+    };
 }
 
 /**
- * Check if API key is configured
+ * Check if API key is configured (for either provider)
  */
 function hasApiKey() {
-    const apiKey = getApiKey();
-    return apiKey && apiKey.trim().length > 0;
+    const settings = getAISettings();
+    if (settings.provider === 'azure') {
+        return settings.azureApiKey && settings.azureApiKey.trim().length > 0 &&
+            settings.azureEndpoint && settings.azureEndpoint.trim().length > 0;
+    } else {
+        return settings.openaiApiKey && settings.openaiApiKey.trim().length > 0;
+    }
 }
 
 /**
@@ -32,38 +56,87 @@ function hasApiKey() {
  */
 function getProxyUrl() {
     return process.env.HTTPS_PROXY ||
-           process.env.HTTP_PROXY ||
-           process.env.https_proxy ||
-           process.env.http_proxy;
+        process.env.HTTP_PROXY ||
+        process.env.https_proxy ||
+        process.env.http_proxy;
 }
 
 /**
- * Create OpenAI client with proxy support
+ * Create HTTPS agent with Zscaler certificate trust
  */
-function createOpenAIClient(apiKey) {
+function createHttpsAgent() {
+    const https = require('https');
     const proxyUrl = getProxyUrl();
 
-    const config = {
-        apiKey: apiKey,
-        timeout: API_TIMEOUT,
+    // Configure HTTPS agent to trust Zscaler certificates
+    const agentOptions = {
+        rejectUnauthorized: false // Trust Zscaler self-signed certificates
     };
 
-    // If proxy is detected, use HttpsProxyAgent (like Copilot does)
     if (proxyUrl) {
-        config.httpAgent = new HttpsProxyAgent(proxyUrl);
         console.log('Using proxy for OpenAI requests:', proxyUrl);
+        return new HttpsProxyAgent(proxyUrl, agentOptions);
+    } else {
+        console.log('Using HTTPS agent with Zscaler certificate trust');
+        return new https.Agent(agentOptions);
     }
-
-    return new OpenAI(config);
 }
 
 /**
- * Fetch motivational message from OpenAI API with timeout
+ * Create OpenAI client (standard or Azure) based on settings
+ */
+function createOpenAIClient() {
+    const settings = getAISettings();
+    const httpAgent = createHttpsAgent();
+
+    if (settings.provider === 'azure') {
+        // Azure OpenAI configuration
+        const { AzureOpenAI } = require('openai');
+
+        console.log('Creating Azure OpenAI client:', {
+            endpoint: settings.azureEndpoint,
+            deployment: settings.azureDeployment
+        });
+
+        return new AzureOpenAI({
+            endpoint: settings.azureEndpoint,
+            apiKey: settings.azureApiKey,
+            deployment: settings.azureDeployment,
+            apiVersion: '2024-02-15-preview',
+            timeout: API_TIMEOUT,
+            dangerouslyAllowBrowser: true, // Required for Electron renderer process
+            httpAgent: httpAgent
+        });
+    } else {
+        // Standard OpenAI configuration
+        console.log('Creating standard OpenAI client');
+
+        return new OpenAI({
+            apiKey: settings.openaiApiKey,
+            timeout: API_TIMEOUT,
+            dangerouslyAllowBrowser: true, // Required for Electron renderer process
+            httpAgent: httpAgent
+        });
+    }
+}
+
+/**
+ * Get model name for the request (deployment for Azure, model for OpenAI)
+ */
+function getModelName() {
+    const settings = getAISettings();
+    if (settings.provider === 'azure') {
+        return settings.azureDeployment;
+    } else {
+        return 'gpt-4o-mini';
+    }
+}
+
+/**
+ * Fetch motivational message from OpenAI or Azure OpenAI API
  */
 async function fetchMotivationalMessage(goalText) {
-    const apiKey = getApiKey();
-
-    if (!apiKey) {
+    if (!hasApiKey()) {
         throw new Error('No API key configured');
     }
 
@@ -72,10 +145,13 @@ async function fetchMotivationalMessage(goalText) {
         : 'Zmotywuj mnie do sesji Deep Work';
 
     try {
-        const openai = createOpenAIClient(apiKey);
+        const client = createOpenAIClient();
+        const modelName = getModelName();
 
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
+        console.log('Sending request to AI...', { model: modelName });
+
+        const completion = await client.chat.completions.create({
+            model: modelName,
             messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
                 { role: 'user', content: userPrompt }
@@ -84,18 +160,29 @@ async function fetchMotivationalMessage(goalText) {
             max_tokens: 100
         });
 
+        console.log('AI response received:', {
+            id: completion.id,
+            model: completion.model,
+            choices: completion.choices?.length
+        });
+
         const message = completion.choices?.[0]?.message?.content?.trim();
 
         if (!message) {
+            console.error('Empty message from API');
             throw new Error('Empty response from API');
         }
 
+        console.log('Successfully extracted message:', message);
         return message;
     } catch (error) {
-        console.error('OpenAI API error:', error.message);
+        console.error('AI API error:', {
+            message: error.message,
+            status: error.status
+        });
 
         // Return fallback quote on any error
-        return FALLBACK_QUOTE;
+        return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
     }
 }
 
@@ -104,7 +191,8 @@ async function fetchMotivationalMessage(goalText) {
  */
 async function getMotivationalMessage(goalText) {
     if (!hasApiKey()) {
-        return null; // Skip motivation if no API key
+        // No API key configured — return a random motivational quote
+        return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
     }
 
     try {
@@ -112,7 +200,7 @@ async function getMotivationalMessage(goalText) {
         return message;
     } catch (error) {
         console.error('Failed to get motivational message:', error);
-        return FALLBACK_QUOTE;
+        return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
     }
 }
 
@@ -121,6 +209,6 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         hasApiKey,
         getMotivationalMessage,
-        FALLBACK_QUOTE
+        FALLBACK_QUOTES
     };
 }

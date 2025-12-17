@@ -1,7 +1,7 @@
 const { app, BrowserWindow, powerSaveBlocker, ipcMain, screen } = require('electron');
-const path = require('path');
 
 let mainWindow;
+let settingsWindow = null;
 let powerSaveBlockerId = null;
 
 function createWindow() {
@@ -22,6 +22,29 @@ function createWindow() {
 
     mainWindow.loadFile('index.html');
     mainWindow.setAlwaysOnTop(true, 'floating');
+
+    // Ensure settings window is closed whenever the main window is closing
+    mainWindow.on('close', () => {
+        if (settingsWindow) {
+            try {
+                settingsWindow.close();
+            } catch (e) {
+                console.error('Failed to close settings window when main window is closing', e);
+            }
+            settingsWindow = null;
+        }
+    });
+
+    // Ensure settings window minimizes when main window is minimized
+    mainWindow.on('minimize', () => {
+        if (settingsWindow) {
+            try {
+                settingsWindow.minimize();
+            } catch (e) {
+                console.error('Failed to minimize settings window on main minimize', e);
+            }
+        }
+    });
     // mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
@@ -44,9 +67,28 @@ ipcMain.on('minimize-window', () => {
     if (mainWindow) {
         mainWindow.minimize();
     }
+
+    // Also minimize settings window if it's open
+    if (settingsWindow) {
+        try {
+            settingsWindow.minimize();
+        } catch (e) {
+            console.error('Failed to minimize settings window via IPC', e);
+        }
+    }
 });
 
 ipcMain.on('close-window', () => {
+    // Close settings window if open to avoid orphaned floating window
+    if (settingsWindow) {
+        try {
+            settingsWindow.close();
+        } catch (e) {
+            console.error('Failed to close settings window via IPC', e);
+        }
+        settingsWindow = null;
+    }
+
     if (mainWindow) {
         mainWindow.close();
     }
@@ -151,5 +193,83 @@ ipcMain.on('stop-power-save-blocker', () => {
         powerSaveBlocker.stop(powerSaveBlockerId);
         console.log('Power save blocker stopped:', powerSaveBlockerId);
         powerSaveBlockerId = null;
+    }
+});
+
+// ============================================
+// SETTINGS WINDOW MANAGEMENT
+// ============================================
+
+function createSettingsWindow() {
+    // Don't create if already exists
+    if (settingsWindow) {
+        settingsWindow.focus();
+        return;
+    }
+
+    const mainBounds = mainWindow.getBounds();
+    const display = screen.getPrimaryDisplay();
+    const screenWidth = display.workAreaSize.width;
+
+    // Determine if main window is closer to left or right edge
+    const windowCenterX = mainBounds.x + mainBounds.width / 2;
+    const isOnRightSide = windowCenterX > screenWidth / 2;
+
+    // Settings window dimensions
+    const settingsWidth = 380;
+    const settingsHeight = 600;
+    const gap = 6; // Gap between windows (reduced to sit closer to main window)
+
+    // Position settings window next to main window
+    let settingsX, settingsY;
+    if (isOnRightSide) {
+        // Main window on right → settings on left
+        settingsX = mainBounds.x - settingsWidth - gap;
+    } else {
+        // Main window on left → settings on right
+        settingsX = mainBounds.x + mainBounds.width + gap;
+    }
+    settingsY = mainBounds.y;
+
+    // Create settings window
+    settingsWindow = new BrowserWindow({
+        width: settingsWidth,
+        height: settingsHeight,
+        x: settingsX,
+        y: settingsY,
+        alwaysOnTop: true,
+        frame: false,
+        transparent: true,
+        resizable: false,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        }
+    });
+
+    settingsWindow.loadFile('settings.html');
+    settingsWindow.setAlwaysOnTop(true, 'floating');
+
+    // Clean up when closed
+    settingsWindow.on('closed', () => {
+        settingsWindow = null;
+    });
+}
+
+// IPC handlers for settings window
+ipcMain.on('open-settings', () => {
+    createSettingsWindow();
+});
+
+ipcMain.on('close-settings', () => {
+    if (settingsWindow) {
+        settingsWindow.close();
+    }
+});
+
+// Sync theme between windows
+ipcMain.on('theme-changed', (event, theme) => {
+    if (mainWindow) {
+        mainWindow.webContents.send('theme-changed', theme);
     }
 });
