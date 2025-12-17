@@ -46,6 +46,7 @@ function createOpenAIClient(apiKey) {
     const config = {
         apiKey: apiKey,
         timeout: API_TIMEOUT,
+        dangerouslyAllowBrowser: true, // Required for Electron renderer process
     };
 
     // If proxy is detected, use HttpsProxyAgent (like Copilot does)
