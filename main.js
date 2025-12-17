@@ -23,6 +23,18 @@ function createWindow() {
 
     mainWindow.loadFile('index.html');
     mainWindow.setAlwaysOnTop(true, 'floating');
+
+    // Ensure settings window is closed whenever the main window is closing
+    mainWindow.on('close', () => {
+        if (settingsWindow) {
+            try {
+                settingsWindow.close();
+            } catch (e) {
+                console.error('Failed to close settings window when main window is closing', e);
+            }
+            settingsWindow = null;
+        }
+    });
     // mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
@@ -48,6 +60,16 @@ ipcMain.on('minimize-window', () => {
 });
 
 ipcMain.on('close-window', () => {
+    // Close settings window if open to avoid orphaned floating window
+    if (settingsWindow) {
+        try {
+            settingsWindow.close();
+        } catch (e) {
+            console.error('Failed to close settings window via IPC', e);
+        }
+        settingsWindow = null;
+    }
+
     if (mainWindow) {
         mainWindow.close();
     }
@@ -177,7 +199,7 @@ function createSettingsWindow() {
     // Settings window dimensions
     const settingsWidth = 380;
     const settingsHeight = 600;
-    const gap = 10; // Gap between windows
+    const gap = 6; // Gap between windows (reduced to sit closer to main window)
 
     // Position settings window next to main window
     let settingsX, settingsY;
