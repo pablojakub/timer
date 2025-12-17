@@ -193,6 +193,14 @@
                 </div>
             </div>
 
+            <!-- Motivational Message Overlay -->
+            <div class="motivation-overlay" id="motivationOverlay" style="display: none;">
+                <div class="motivation-content">
+                    <div class="motivation-icon">🎯</div>
+                    <p class="motivation-text" id="motivationText"></p>
+                </div>
+            </div>
+
             <!-- Settings Panel -->
             <div class="modal-overlay" id="settingsPanel" style="display: none;">
                 <div class="settings-dialog">
@@ -229,12 +237,23 @@
                                 </label>
                             </div>
                         </div>
+
+                        <!-- AI Motivation Section -->
+                        <div class="settings-section">
+                            <div class="settings-section-title">AI Motywacja</div>
+                            <div class="settings-control">
+                                <label class="settings-input-label">OpenAI API Key</label>
+                                <input type="password" class="settings-input" id="aiApiKeyInput" placeholder="sk-...">
+                                <div class="settings-hint">Klucz API dla GPT-4O mini. Pozostaw puste, aby wyłączyć.</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="aiMotivation.js"></script>
     <script src="streakCounter.js"></script>
     <script src="renderer.js"></script>
 </body>

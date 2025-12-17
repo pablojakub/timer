@@ -142,16 +142,18 @@ function hideGoalDisplay() {
     document.getElementById('goalLabel').style.display = 'block';
 }
 
-function startTimer() {
+async function startTimer() {
     // Check distractions ONLY when starting a new session (not pause/resume)
     if (!isRunning && timeLeft === totalTime) {
         if (!checkDistractionsBeforeStart()) {
             return; // Modal was shown, wait for user response
         }
+        // If we got here, distraction check was skipped
+        await showMotivationAndStart();
+    } else {
+        // Resume/pause logic (no motivation needed)
+        proceedWithTimerStart();
     }
-
-    // If we got here, we can proceed with starting (user said "Yes" or skipped modal)
-    proceedWithTimerStart();
 }
 
 function resetTimer() {
@@ -354,13 +356,13 @@ function checkDistractionsBeforeStart() {
     return false;
 }
 
-function handleDistractionYes() {
+async function handleDistractionYes() {
     const checkbox = document.getElementById('hideDistractionCheck');
     if (checkbox.checked) {
         saveDistractionCheckPreference(true);
     }
     hideDistractionModal();
-    proceedWithTimerStart();
+    await showMotivationAndStart();
 }
 
 function handleDistractionNo() {
@@ -369,6 +371,65 @@ function handleDistractionNo() {
         saveDistractionCheckPreference(true);
     }
     hideDistractionModal();
+}
+
+// ============================================
+// AI MOTIVATIONAL MESSAGE FUNCTIONS
+// ============================================
+
+const motivationOverlay = document.getElementById('motivationOverlay');
+const motivationText = document.getElementById('motivationText');
+
+/**
+ * Show motivational message overlay
+ */
+function showMotivationOverlay(message) {
+    if (!motivationOverlay || !motivationText) return;
+
+    motivationText.textContent = message;
+    motivationOverlay.style.display = 'flex';
+}
+
+/**
+ * Hide motivational message overlay
+ */
+function hideMotivationOverlay() {
+    if (!motivationOverlay) return;
+    motivationOverlay.style.display = 'none';
+}
+
+/**
+ * Show motivation and start timer
+ */
+async function showMotivationAndStart() {
+    const goalText = goalInput.value.trim();
+
+    // Check if AI motivation is enabled (API key configured)
+    if (typeof hasApiKey === 'function' && hasApiKey()) {
+        try {
+            // Start timer immediately in background
+            proceedWithTimerStart();
+
+            // Fetch motivational message
+            const message = await getMotivationalMessage(goalText);
+
+            if (message) {
+                // Show overlay with message
+                showMotivationOverlay(message);
+
+                // Hide overlay after 2.5 seconds
+                setTimeout(() => {
+                    hideMotivationOverlay();
+                }, 2500);
+            }
+        } catch (error) {
+            console.error('Error showing motivation:', error);
+            // Timer already started, just continue
+        }
+    } else {
+        // No API key configured, start timer directly
+        proceedWithTimerStart();
+    }
 }
 
 function proceedWithTimerStart() {
@@ -671,6 +732,9 @@ function syncSettingsPanelState() {
     // When checked = modal WILL show (hideDistractionCheck = false)
     // When unchecked = modal will NOT show (hideDistractionCheck = true)
     askDistractionCheckbox.checked = !distractionCheckHidden;
+
+    // Sync AI API key
+    loadAiApiKey();
 }
 
 // Update theme button visual states
@@ -716,6 +780,36 @@ lightThemeBtn.addEventListener('click', () => handleSettingsThemeChange('light')
 
 // Distraction checkbox event listener
 askDistractionCheckbox.addEventListener('change', handleDistractionCheckboxChange);
+
+// ============================================
+// AI MOTIVATION API KEY MANAGEMENT
+// ============================================
+
+const aiApiKeyInput = document.getElementById('aiApiKeyInput');
+
+// Load API key from localStorage
+function loadAiApiKey() {
+    const apiKey = localStorage.getItem('openai_api_key');
+    if (apiKey && aiApiKeyInput) {
+        aiApiKeyInput.value = apiKey;
+    }
+}
+
+// Save API key to localStorage
+function saveAiApiKey() {
+    const apiKey = aiApiKeyInput.value.trim();
+    if (apiKey) {
+        localStorage.setItem('openai_api_key', apiKey);
+    } else {
+        localStorage.removeItem('openai_api_key');
+    }
+}
+
+// Event listener for API key input
+if (aiApiKeyInput) {
+    aiApiKeyInput.addEventListener('blur', saveAiApiKey);
+    aiApiKeyInput.addEventListener('change', saveAiApiKey);
+}
 
 // ============================================
 // MUSIC PLAYER IMPLEMENTATION
