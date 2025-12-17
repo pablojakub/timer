@@ -46,6 +46,8 @@
     "electron-builder": "^24.9.1"
   },
   "dependencies": {
-    "canvas-confetti": "^1.9.4"
+    "canvas-confetti": "^1.9.4",
+    "https-proxy-agent": "^7.0.2",
+    "openai": "^4.28.0"
   }
 }

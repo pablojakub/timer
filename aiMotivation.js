@@ -1,7 +1,11 @@
 /**
  * AI Motivation Module
  * Handles OpenAI API calls for motivational messages
+ * Uses official OpenAI client with proxy support (for Zscaler compatibility)
  */
+
+const OpenAI = require('openai');
+const { HttpsProxyAgent } = require('https-proxy-agent');
 
 const API_TIMEOUT = 3000; // 3 seconds
 const FALLBACK_QUOTE = "Skupiony głupiec osiągnie więcej niż rozkojarzony mędrzec";
@@ -24,6 +28,36 @@ function hasApiKey() {
 }
 
 /**
+ * Detect proxy from environment variables (like GitHub Copilot does)
+ */
+function getProxyUrl() {
+    return process.env.HTTPS_PROXY ||
+           process.env.HTTP_PROXY ||
+           process.env.https_proxy ||
+           process.env.http_proxy;
+}
+
+/**
+ * Create OpenAI client with proxy support
+ */
+function createOpenAIClient(apiKey) {
+    const proxyUrl = getProxyUrl();
+
+    const config = {
+        apiKey: apiKey,
+        timeout: API_TIMEOUT,
+    };
+
+    // If proxy is detected, use HttpsProxyAgent (like Copilot does)
+    if (proxyUrl) {
+        config.httpAgent = new HttpsProxyAgent(proxyUrl);
+        console.log('Using proxy for OpenAI requests:', proxyUrl);
+    }
+
+    return new OpenAI(config);
+}
+
+/**
  * Fetch motivational message from OpenAI API with timeout
  */
 async function fetchMotivationalMessage(goalText) {
@@ -37,36 +71,20 @@ async function fetchMotivationalMessage(goalText) {
         ? goalText.trim()
         : 'Zmotywuj mnie do sesji Deep Work';
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
-
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    { role: 'user', content: userPrompt }
-                ],
-                temperature: 0.7,
-                max_tokens: 100
-            }),
-            signal: controller.signal
+        const openai = createOpenAIClient(apiKey);
+
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 100
         });
 
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const message = data.choices?.[0]?.message?.content?.trim();
+        const message = completion.choices?.[0]?.message?.content?.trim();
 
         if (!message) {
             throw new Error('Empty response from API');
@@ -74,7 +92,7 @@ async function fetchMotivationalMessage(goalText) {
 
         return message;
     } catch (error) {
-        clearTimeout(timeoutId);
+        console.error('OpenAI API error:', error.message);
 
         // Return fallback quote on any error
         return FALLBACK_QUOTE;
