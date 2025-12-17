@@ -42,6 +42,7 @@ function getProxyUrl() {
  */
 function createOpenAIClient(apiKey) {
     const proxyUrl = getProxyUrl();
+    const https = require('https');
 
     const config = {
         apiKey: apiKey,
@@ -49,10 +50,19 @@ function createOpenAIClient(apiKey) {
         dangerouslyAllowBrowser: true, // Required for Electron renderer process
     };
 
-    // If proxy is detected, use HttpsProxyAgent (like Copilot does)
+    // Configure HTTPS agent to trust Zscaler certificates
+    // This is needed because Zscaler does SSL inspection with its own CA
     if (proxyUrl) {
-        config.httpAgent = new HttpsProxyAgent(proxyUrl);
+        config.httpAgent = new HttpsProxyAgent(proxyUrl, {
+            rejectUnauthorized: false // Trust Zscaler certificates
+        });
         console.log('Using proxy for OpenAI requests:', proxyUrl);
+    } else {
+        // Even without explicit proxy, Zscaler might intercept with SSL inspection
+        config.httpAgent = new https.Agent({
+            rejectUnauthorized: false // Trust Zscaler certificates
+        });
+        console.log('Using HTTPS agent with Zscaler certificate trust');
     }
 
     return new OpenAI(config);
