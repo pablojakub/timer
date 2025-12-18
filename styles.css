@@ -353,6 +353,44 @@ body {
     color: var(--text-primary);
 }
 
+.btn-danger {
+    background: #ff4757;
+    border: 1px solid rgba(255, 71, 87, 0.35);
+    color: #fff;
+    box-shadow: 0 0 22px rgba(255, 71, 87, 0.25);
+}
+
+.btn-danger:hover {
+    filter: brightness(1.05);
+}
+
+.btn-danger:active {
+    transform: translateY(1px);
+}
+
+/* Hold-to-confirm button (prevents accidental clicks) */
+.btn-hold {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-hold::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: var(--hold-progress, 0%);
+    background: rgba(0, 0, 0, 0.22);
+    pointer-events: none;
+    transition: width 40ms linear;
+}
+
+.btn-hold[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 .progress-ring {
     position: absolute;
     width: 200px;
@@ -856,6 +894,7 @@ body {
     flex: 1;
     height: 4px;
     -webkit-appearance: none;
+    appearance: none;
     background: var(--border);
     border-radius: 2px;
     outline: none;

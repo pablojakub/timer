@@ -168,6 +168,9 @@ function resetTimer() {
     hideGoalDisplay();
     progressCircle.style.strokeDashoffset = circumference;
 
+    // Disable finish-early when reset.
+    setFinishEarlyEnabled(false);
+
     // Allow computer to sleep when reset
     ipcRenderer.send('stop-power-save-blocker');
 }
@@ -269,6 +272,103 @@ function handleAchievementYes() {
     }
     hideAchievementModal();
     celebrateWithConfetti();
+}
+
+// Finish early: UX requires press-and-hold to avoid accidental activation.
+const finishEarlyBtn = document.getElementById('finishEarlyBtn');
+const HOLD_TO_CONFIRM_MS = 900;
+let holdTimerId = null;
+let holdStartTs = null;
+
+function setFinishEarlyEnabled(enabled) {
+    if (!finishEarlyBtn) return;
+    finishEarlyBtn.disabled = !enabled;
+    finishEarlyBtn.style.display = enabled ? 'inline-block' : 'none';
+    finishEarlyBtn.style.setProperty('--hold-progress', '0%');
+}
+
+function completeSessionEarly() {
+    // Stop timer if running
+    if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+    }
+
+    isRunning = false;
+    timerDisplay.classList.remove('running');
+    timerDisplay.classList.remove('paused');
+    startBtn.textContent = 'Start';
+
+    ipcRenderer.send('stop-power-save-blocker');
+
+    // Treat it as a successful achievement (exact same behavior)
+    handleAchievementYes();
+
+    // After completion we unlock inputs similarly to normal end-of-session flow
+    setInputsDisabled(false);
+
+    // Disable the button until a new session is started
+    setFinishEarlyEnabled(false);
+}
+
+function clearHoldState() {
+    if (!finishEarlyBtn) return;
+    if (holdTimerId) {
+        clearInterval(holdTimerId);
+        holdTimerId = null;
+    }
+    holdStartTs = null;
+    finishEarlyBtn.style.setProperty('--hold-progress', '0%');
+    finishEarlyBtn.removeAttribute('data-holding');
+}
+
+function startHoldToFinish() {
+    if (!finishEarlyBtn || finishEarlyBtn.disabled) return;
+
+    // Only during an active (running or paused) session
+    const sessionActive = (timeLeft < totalTime) && (timeLeft > 0);
+    if (!sessionActive) return;
+
+    finishEarlyBtn.setAttribute('data-holding', 'true');
+    holdStartTs = Date.now();
+
+    holdTimerId = setInterval(() => {
+        const elapsed = Date.now() - holdStartTs;
+        const ratio = Math.min(1, elapsed / HOLD_TO_CONFIRM_MS);
+        finishEarlyBtn.style.setProperty('--hold-progress', `${Math.round(ratio * 100)}%`);
+
+        if (ratio >= 1) {
+            clearHoldState();
+            completeSessionEarly();
+        }
+    }, 25);
+}
+
+if (finishEarlyBtn) {
+    // Mouse / pointer
+    finishEarlyBtn.addEventListener('pointerdown', (e) => {
+        // left click / primary pointer only
+        if (e.button !== undefined && e.button !== 0) return;
+        startHoldToFinish();
+    });
+    finishEarlyBtn.addEventListener('pointerup', clearHoldState);
+    finishEarlyBtn.addEventListener('pointerleave', clearHoldState);
+    finishEarlyBtn.addEventListener('pointercancel', clearHoldState);
+
+    // Keyboard accessibility (Space/Enter)
+    finishEarlyBtn.addEventListener('keydown', (e) => {
+        if (e.repeat) return;
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            startHoldToFinish();
+        }
+    });
+    finishEarlyBtn.addEventListener('keyup', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            clearHoldState();
+        }
+    });
 }
 
 function handleAchievementNo() {
@@ -438,6 +538,9 @@ function proceedWithTimerStart() {
             setInputsDisabled(true);
             showGoalDisplay();
 
+            // Enable finish-early once the session has actually started.
+            setFinishEarlyEnabled(true);
+
             ipcRenderer.send('start-power-save-blocker');
 
             timerId = setInterval(() => {
@@ -450,6 +553,9 @@ function proceedWithTimerStart() {
                     timerDisplay.classList.remove('running');
                     startBtn.textContent = 'Start';
                     setInputsDisabled(false);
+
+                    // Disable finish-early; session ended.
+                    setFinishEarlyEnabled(false);
 
                     ipcRenderer.send('stop-power-save-blocker');
                     stopMusic();
@@ -470,6 +576,9 @@ function proceedWithTimerStart() {
         timerDisplay.classList.remove('running');
         timerDisplay.classList.add('paused');
         startBtn.textContent = 'Wznów';
+
+        // Keep finish-early enabled also when paused.
+        setFinishEarlyEnabled(true);
 
         ipcRenderer.send('stop-power-save-blocker');
     }
