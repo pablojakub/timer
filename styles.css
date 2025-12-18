@@ -372,6 +372,20 @@ body {
 .btn-hold {
     position: relative;
     overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.15s ease;
+}
+
+.btn-hold .btn-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.btn-hold .btn-text {
+    line-height: 1;
 }
 
 .btn-hold::after {
@@ -381,9 +395,15 @@ body {
     top: 0;
     height: 100%;
     width: var(--hold-progress, 0%);
-    background: rgba(0, 0, 0, 0.22);
+    background: rgba(255, 255, 255, 0.15);
     pointer-events: none;
     transition: width 40ms linear;
+}
+
+/* Holding state - green "complete" style */
+.btn-hold.holding {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    box-shadow: 0 8px 24px rgba(46, 204, 113, 0.4);
 }
 
 .btn-hold[disabled] {
@@ -1330,7 +1350,7 @@ body {
     display: none;
 }
 
-.provider-radio-label input[type="radio"]:checked + span {
+.provider-radio-label input[type="radio"]:checked+span {
     color: var(--text-primary);
     font-weight: 600;
 }

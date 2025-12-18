@@ -163,13 +163,10 @@ function resetTimer() {
     // restore timer to default value
     setTimeFromMinutes(50);
     timerDisplay.classList.remove('running', 'paused');
-    startBtn.textContent = 'Start';
+    updateStartBtnDisplay('start');
     setInputsDisabled(false);
     hideGoalDisplay();
     progressCircle.style.strokeDashoffset = circumference;
-
-    // Disable finish-early when reset.
-    setFinishEarlyEnabled(false);
 
     // Allow computer to sleep when reset
     ipcRenderer.send('stop-power-save-blocker');
@@ -274,20 +271,58 @@ function handleAchievementYes() {
     celebrateWithConfetti();
 }
 
-// Finish early: UX requires press-and-hold to avoid accidental activation.
-const finishEarlyBtn = document.getElementById('finishEarlyBtn');
-const HOLD_TO_CONFIRM_MS = 900;
-let holdTimerId = null;
-let holdStartTs = null;
+// Button icon/text elements
+const startBtnIcon = document.getElementById('startBtnIcon');
+const startBtnText = document.getElementById('startBtnText');
 
-function setFinishEarlyEnabled(enabled) {
-    if (!finishEarlyBtn) return;
-    finishEarlyBtn.disabled = !enabled;
-    finishEarlyBtn.style.display = enabled ? 'inline-block' : 'none';
-    finishEarlyBtn.style.setProperty('--hold-progress', '0%');
+// Icons for different states
+const ICONS = {
+    start: '▶',
+    pause: '❚❚',
+    resume: '▶',
+    complete: '✓'
+};
+
+function updateStartBtnDisplay(state) {
+    // state: 'start' | 'pause' | 'resume' | 'complete'
+    if (startBtnIcon) startBtnIcon.textContent = ICONS[state] || ICONS.start;
+    if (startBtnText) {
+        const labels = {
+            start: 'Start',
+            pause: 'Pauza',
+            resume: 'Wznów',
+            complete: 'Ukończ'
+        };
+        startBtnText.textContent = labels[state] || labels.start;
+    }
+}
+
+// Hold-to-finish on startBtn: short click = pause/resume, long press = finish early
+const HOLD_TO_FINISH_MS = 1500;
+let startBtnHoldTimer = null;
+let startBtnHoldStart = null;
+let startBtnWasHeld = false;
+let startBtnPrevState = null; // to restore after cancelled hold
+
+function clearStartBtnHold() {
+    if (startBtnHoldTimer) {
+        clearInterval(startBtnHoldTimer);
+        startBtnHoldTimer = null;
+    }
+    startBtnHoldStart = null;
+    startBtn.style.setProperty('--hold-progress', '0%');
+    startBtn.classList.remove('holding');
+
+    // Restore previous button state if hold was cancelled (not completed)
+    if (startBtnPrevState && !startBtnWasHeld) {
+        updateStartBtnDisplay(startBtnPrevState);
+    }
+    startBtnPrevState = null;
 }
 
 function completeSessionEarly() {
+    clearStartBtnHold();
+
     // Stop timer if running
     if (timerId) {
         clearInterval(timerId);
@@ -297,7 +332,7 @@ function completeSessionEarly() {
     isRunning = false;
     timerDisplay.classList.remove('running');
     timerDisplay.classList.remove('paused');
-    startBtn.textContent = 'Start';
+    updateStartBtnDisplay('start');
 
     ipcRenderer.send('stop-power-save-blocker');
 
@@ -306,70 +341,57 @@ function completeSessionEarly() {
 
     // After completion we unlock inputs similarly to normal end-of-session flow
     setInputsDisabled(false);
-
-    // Disable the button until a new session is started
-    setFinishEarlyEnabled(false);
 }
 
-function clearHoldState() {
-    if (!finishEarlyBtn) return;
-    if (holdTimerId) {
-        clearInterval(holdTimerId);
-        holdTimerId = null;
-    }
-    holdStartTs = null;
-    finishEarlyBtn.style.setProperty('--hold-progress', '0%');
-    finishEarlyBtn.removeAttribute('data-holding');
-}
+function handleStartBtnPointerDown(e) {
+    // left click / primary pointer only
+    if (e.button !== undefined && e.button !== 0) return;
 
-function startHoldToFinish() {
-    if (!finishEarlyBtn || finishEarlyBtn.disabled) return;
-
-    // Only during an active (running or paused) session
+    // Only enable hold-to-finish when session is active (running or paused mid-session)
     const sessionActive = (timeLeft < totalTime) && (timeLeft > 0);
     if (!sessionActive) return;
 
-    finishEarlyBtn.setAttribute('data-holding', 'true');
-    holdStartTs = Date.now();
+    startBtnWasHeld = false;
+    startBtnHoldStart = Date.now();
 
-    holdTimerId = setInterval(() => {
-        const elapsed = Date.now() - holdStartTs;
-        const ratio = Math.min(1, elapsed / HOLD_TO_CONFIRM_MS);
-        finishEarlyBtn.style.setProperty('--hold-progress', `${Math.round(ratio * 100)}%`);
+    // Save current state so we can restore if cancelled
+    startBtnPrevState = isRunning ? 'pause' : 'resume';
+
+    startBtnHoldTimer = setInterval(() => {
+        const elapsed = Date.now() - startBtnHoldStart;
+        const ratio = Math.min(1, elapsed / HOLD_TO_FINISH_MS);
+        startBtn.style.setProperty('--hold-progress', `${Math.round(ratio * 100)}%`);
+
+        // Add holding class and change to "complete" state once past threshold
+        if (ratio > 0.15 && !startBtn.classList.contains('holding')) {
+            startBtn.classList.add('holding');
+            updateStartBtnDisplay('complete');
+        }
 
         if (ratio >= 1) {
-            clearHoldState();
+            startBtnWasHeld = true;
             completeSessionEarly();
         }
     }, 25);
 }
 
-if (finishEarlyBtn) {
-    // Mouse / pointer
-    finishEarlyBtn.addEventListener('pointerdown', (e) => {
-        // left click / primary pointer only
-        if (e.button !== undefined && e.button !== 0) return;
-        startHoldToFinish();
-    });
-    finishEarlyBtn.addEventListener('pointerup', clearHoldState);
-    finishEarlyBtn.addEventListener('pointerleave', clearHoldState);
-    finishEarlyBtn.addEventListener('pointercancel', clearHoldState);
-
-    // Keyboard accessibility (Space/Enter)
-    finishEarlyBtn.addEventListener('keydown', (e) => {
-        if (e.repeat) return;
-        if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            startHoldToFinish();
-        }
-    });
-    finishEarlyBtn.addEventListener('keyup', (e) => {
-        if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            clearHoldState();
-        }
-    });
+function handleStartBtnPointerUp() {
+    clearStartBtnHold();
 }
+
+// Attach pointer events for hold detection
+startBtn.addEventListener('pointerdown', handleStartBtnPointerDown);
+startBtn.addEventListener('pointerup', handleStartBtnPointerUp);
+startBtn.addEventListener('pointerleave', handleStartBtnPointerUp);
+startBtn.addEventListener('pointercancel', handleStartBtnPointerUp);
+
+// Prevent the normal click handler if hold was completed
+startBtn.addEventListener('click', (e) => {
+    if (startBtnWasHeld) {
+        e.stopImmediatePropagation();
+        startBtnWasHeld = false;
+    }
+}, true); // capture phase to run before startTimer
 
 function handleAchievementNo() {
     hideAchievementModal();
@@ -388,7 +410,7 @@ function handleAchievementExtend() {
     isRunning = true;
     timerDisplay.classList.add('running');
     timerDisplay.classList.remove('paused');
-    startBtn.textContent = 'Pauza';
+    updateStartBtnDisplay('pause');
     setInputsDisabled(true);
     showGoalDisplay();
 
@@ -402,7 +424,7 @@ function handleAchievementExtend() {
             clearInterval(timerId);
             isRunning = false;
             timerDisplay.classList.remove('running');
-            startBtn.textContent = 'Start';
+            updateStartBtnDisplay('start');
             setInputsDisabled(false);
 
             ipcRenderer.send('stop-power-save-blocker');
@@ -534,12 +556,9 @@ function proceedWithTimerStart() {
             isRunning = true;
             timerDisplay.classList.add('running');
             timerDisplay.classList.remove('paused');
-            startBtn.textContent = 'Pauza';
+            updateStartBtnDisplay('pause');
             setInputsDisabled(true);
             showGoalDisplay();
-
-            // Enable finish-early once the session has actually started.
-            setFinishEarlyEnabled(true);
 
             ipcRenderer.send('start-power-save-blocker');
 
@@ -551,11 +570,8 @@ function proceedWithTimerStart() {
                     clearInterval(timerId);
                     isRunning = false;
                     timerDisplay.classList.remove('running');
-                    startBtn.textContent = 'Start';
+                    updateStartBtnDisplay('start');
                     setInputsDisabled(false);
-
-                    // Disable finish-early; session ended.
-                    setFinishEarlyEnabled(false);
 
                     ipcRenderer.send('stop-power-save-blocker');
                     stopMusic();
@@ -575,10 +591,7 @@ function proceedWithTimerStart() {
         isRunning = false;
         timerDisplay.classList.remove('running');
         timerDisplay.classList.add('paused');
-        startBtn.textContent = 'Wznów';
-
-        // Keep finish-early enabled also when paused.
-        setFinishEarlyEnabled(true);
+        updateStartBtnDisplay('resume');
 
         ipcRenderer.send('stop-power-save-blocker');
     }
