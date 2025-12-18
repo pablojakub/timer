@@ -248,6 +248,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 20px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .arrow-buttons-left,
@@ -1583,4 +1584,130 @@ body {
 :root[data-theme="light"] .motivation-text {
     color: #ffffff;
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================ */
+/* PLANT GROWTH ANIMATION STYLES               */
+/* ============================================ */
+
+.plant-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 15;
+}
+
+.plant-container.visible {
+    display: flex;
+}
+
+.plant-svg {
+    width: 100%;
+    height: 100%;
+    animation: plantSway 4s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+.plant-stage {
+    transition: opacity 0.8s ease-in-out;
+}
+
+/* Swaying animation for the plant */
+@keyframes plantSway {
+
+    0%,
+    100% {
+        transform: rotate(-2deg);
+    }
+
+    50% {
+        transform: rotate(2deg);
+    }
+}
+
+/* Growing animation when stage changes */
+@keyframes plantGrow {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.plant-stage.growing {
+    animation: plantGrow 0.8s ease-out forwards;
+}
+
+/* Timer visibility when plant is shown */
+.timer-controls.hidden-for-plant {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+}
+
+.timer-controls.visible-temp {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 20;
+    position: relative;
+}
+
+/* Flower bloom animation */
+@keyframes flowerBloom {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.2) rotate(10deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+#plantStage5 ellipse[fill^="#FF"],
+#plantStage5 circle[fill="#FFD700"],
+#plantStage5 circle[fill="#FFA500"] {
+    animation: flowerBloom 1s ease-out;
+}
+
+/* Sparkle effect for completed plant */
+@keyframes sparkle {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.3));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 15px rgba(255, 107, 53, 0.5));
+    }
+}
+
+.plant-svg.complete {
+    animation: plantSway 4s ease-in-out infinite, sparkle 2s ease-in-out infinite;
+}
+
+/* Light theme adjustments for plant */
+:root[data-theme="light"] .plant-container {
+    filter: brightness(1.1) saturate(1.1);
 }
