@@ -46,10 +46,13 @@
                 <!-- Plant Growth Display -->
                 <div class="plant-container" id="plantContainer">
                     <svg class="plant-svg" id="plantSvg" viewBox="0 0 100 100">
-                        <!-- Stage 1: Seed (0-20%) -->
+                        <!-- Stage 1: Seedling with tiny stem (0-20%) -->
                         <g class="plant-stage" id="plantStage1">
-                            <ellipse cx="50" cy="85" rx="8" ry="4" fill="#8B4513" />
-                            <ellipse cx="50" cy="82" rx="5" ry="6" fill="#654321" />
+                            <ellipse cx="50" cy="88" rx="10" ry="4" fill="#8B4513" />
+                            <path d="M50 86 Q50 78 50 72" stroke="#228B22" stroke-width="2.5" fill="none"
+                                stroke-linecap="round" />
+                            <ellipse cx="47" cy="70" rx="5" ry="3" fill="#32CD32" transform="rotate(-35 47 70)" />
+                            <ellipse cx="53" cy="70" rx="5" ry="3" fill="#32CD32" transform="rotate(35 53 70)" />
                         </g>
                         <!-- Stage 2: Sprout (20-40%) -->
                         <g class="plant-stage" id="plantStage2" style="opacity: 0;">

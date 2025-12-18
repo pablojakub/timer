@@ -248,7 +248,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 20px;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .arrow-buttons-left,
@@ -1595,17 +1595,21 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
-    display: none;
+    width: 140px;
+    height: 140px;
+    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 15;
+    z-index: 25;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .plant-container.visible {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
 }
 
 .plant-svg {
@@ -1657,14 +1661,14 @@ body {
 .timer-controls.hidden-for-plant {
     opacity: 0;
     pointer-events: none;
-    position: absolute;
+    visibility: hidden;
 }
 
 .timer-controls.visible-temp {
     opacity: 1;
     pointer-events: auto;
-    z-index: 20;
-    position: relative;
+    visibility: visible;
+    z-index: 30;
 }
 
 /* Flower bloom animation */
