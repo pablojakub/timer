@@ -10,6 +10,21 @@ const increaseBy10Btn = document.getElementById('increaseBy10');
 const decreaseBy10Btn = document.getElementById('decreaseBy10');
 const increaseBy1Btn = document.getElementById('increaseBy1');
 const decreaseBy1Btn = document.getElementById('decreaseBy1');
+const plantContainer = document.getElementById('plantContainer');
+const plantSvg = document.getElementById('plantSvg');
+const timerControls = document.getElementById('timerControls');
+
+// Plant stage elements
+const plantStages = [
+    document.getElementById('plantStage1'),
+    document.getElementById('plantStage2'),
+    document.getElementById('plantStage3'),
+    document.getElementById('plantStage4'),
+    document.getElementById('plantStage5')
+];
+
+let currentPlantStage = 0;
+let showTimerTimeout = null;
 
 let timeLeft = 50 * 60; // Default 50 minutes in seconds
 let totalTime = timeLeft;
@@ -18,6 +33,105 @@ let isRunning = false;
 let distractionCheckHidden = false;
 
 const circumference = 2 * Math.PI * 90;
+
+// ============================================
+// PLANT GROWTH FUNCTIONS
+// ============================================
+
+function getPlantStageFromProgress(progress) {
+    // progress is 0-1
+    if (progress < 0.2) return 0;      // Stage 1: Seed (0-20%)
+    if (progress < 0.4) return 1;      // Stage 2: Sprout (20-40%)
+    if (progress < 0.6) return 2;      // Stage 3: Small Plant (40-60%)
+    if (progress < 0.8) return 3;      // Stage 4: Plant with Bud (60-80%)
+    return 4;                          // Stage 5: Full Flower (80-100%)
+}
+
+function updatePlantGrowth(progress) {
+    const newStage = getPlantStageFromProgress(progress);
+
+    if (newStage !== currentPlantStage) {
+        // Hide all stages first
+        plantStages.forEach((stage, index) => {
+            if (stage) {
+                stage.style.opacity = '0';
+                stage.classList.remove('growing');
+            }
+        });
+
+        // Show and animate the new stage
+        if (plantStages[newStage]) {
+            plantStages[newStage].style.opacity = '1';
+            plantStages[newStage].classList.add('growing');
+        }
+
+        currentPlantStage = newStage;
+
+        // Add complete class for sparkle effect at final stage
+        if (newStage === 4) {
+            plantSvg.classList.add('complete');
+        } else {
+            plantSvg.classList.remove('complete');
+        }
+    }
+}
+
+function showPlant() {
+    plantContainer.classList.add('visible');
+    timerControls.classList.add('hidden-for-plant');
+
+    // Reset to first stage
+    currentPlantStage = 0;
+    plantStages.forEach((stage, index) => {
+        if (stage) {
+            stage.style.opacity = index === 0 ? '1' : '0';
+            stage.classList.remove('growing');
+        }
+    });
+    plantSvg.classList.remove('complete');
+}
+
+function hidePlant() {
+    plantContainer.classList.remove('visible');
+    timerControls.classList.remove('hidden-for-plant');
+    timerControls.classList.remove('visible-temp');
+
+    if (showTimerTimeout) {
+        clearTimeout(showTimerTimeout);
+        showTimerTimeout = null;
+    }
+}
+
+function showTimerTemporarily() {
+    // Clear any existing timeout
+    if (showTimerTimeout) {
+        clearTimeout(showTimerTimeout);
+    }
+
+    // Hide plant, show timer
+    plantContainer.classList.remove('visible');
+    timerControls.classList.remove('hidden-for-plant');
+    timerControls.classList.add('visible-temp');
+
+    // After 3 seconds, show plant again (if session is running)
+    showTimerTimeout = setTimeout(() => {
+        if (isRunning) {
+            plantContainer.classList.add('visible');
+            timerControls.classList.add('hidden-for-plant');
+            timerControls.classList.remove('visible-temp');
+        }
+    }, 3000);
+}
+
+// Click on plant to show timer temporarily
+if (plantContainer) {
+    plantContainer.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isRunning) {
+            showTimerTemporarily();
+        }
+    });
+}
 
 function formatTime(seconds) {
     // If there's at least one full minute left, show only whole minutes (no seconds).
@@ -35,6 +149,11 @@ function updateDisplay() {
     timerDisplay.textContent = formatTime(timeLeft);
     const progress = totalTime > 0 ? (totalTime - timeLeft) / totalTime : 0;
     progressCircle.style.strokeDashoffset = circumference * (1 - progress);
+
+    // Update plant growth if session is running
+    if (isRunning && plantContainer.classList.contains('visible')) {
+        updatePlantGrowth(progress);
+    }
 }
 
 function getMinutesFromTime() {
@@ -167,6 +286,9 @@ function resetTimer() {
     setInputsDisabled(false);
     hideGoalDisplay();
     progressCircle.style.strokeDashoffset = circumference;
+
+    // Hide plant on reset
+    hidePlant();
 
     // Allow computer to sleep when reset
     ipcRenderer.send('stop-power-save-blocker');
@@ -334,6 +456,9 @@ function completeSessionEarly() {
     timerDisplay.classList.remove('paused');
     updateStartBtnDisplay('start');
 
+    // Hide plant on early completion
+    hidePlant();
+
     ipcRenderer.send('stop-power-save-blocker');
 
     // Treat it as a successful achievement (exact same behavior)
@@ -414,6 +539,9 @@ function handleAchievementExtend() {
     setInputsDisabled(true);
     showGoalDisplay();
 
+    // Show plant for extended session
+    showPlant();
+
     ipcRenderer.send('start-power-save-blocker');
 
     timerId = setInterval(() => {
@@ -426,6 +554,9 @@ function handleAchievementExtend() {
             timerDisplay.classList.remove('running');
             updateStartBtnDisplay('start');
             setInputsDisabled(false);
+
+            // Hide plant when extended session ends
+            hidePlant();
 
             ipcRenderer.send('stop-power-save-blocker');
             stopMusic();
@@ -560,6 +691,9 @@ function proceedWithTimerStart() {
             setInputsDisabled(true);
             showGoalDisplay();
 
+            // Show plant when session starts
+            showPlant();
+
             ipcRenderer.send('start-power-save-blocker');
 
             timerId = setInterval(() => {
@@ -572,6 +706,9 @@ function proceedWithTimerStart() {
                     timerDisplay.classList.remove('running');
                     updateStartBtnDisplay('start');
                     setInputsDisabled(false);
+
+                    // Hide plant when session ends
+                    hidePlant();
 
                     ipcRenderer.send('stop-power-save-blocker');
                     stopMusic();
@@ -592,6 +729,9 @@ function proceedWithTimerStart() {
         timerDisplay.classList.remove('running');
         timerDisplay.classList.add('paused');
         updateStartBtnDisplay('resume');
+
+        // Keep plant visible but stop updating during pause
+        // (plant stays at current growth stage)
 
         ipcRenderer.send('stop-power-save-blocker');
     }
