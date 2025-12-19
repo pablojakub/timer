@@ -539,8 +539,17 @@ function handleAchievementExtend() {
     setInputsDisabled(true);
     showGoalDisplay();
 
-    // Show plant for extended session
-    showPlant();
+    // Show plant for extended session - keep it at full growth (don't reset)
+    plantContainer.classList.add('visible');
+    timerControls.classList.add('hidden-for-plant');
+    // Keep plant at final stage (full flower)
+    currentPlantStage = 4;
+    plantStages.forEach((stage, index) => {
+        if (stage) {
+            stage.style.opacity = index === 4 ? '1' : '0';
+        }
+    });
+    plantSvg.classList.add('complete');
 
     ipcRenderer.send('start-power-save-blocker');
 
